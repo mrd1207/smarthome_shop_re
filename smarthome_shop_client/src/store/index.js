@@ -266,8 +266,8 @@ export default new Vuex.Store({
     async confirmPayPwd(context,params){
       return await axios.post('pay_pwd',params);
     },
-    async hasPay(context,params){
-      return await axios.post('has_pay',params);
+    async updateOrder(context,params){
+      return await axios.post('update_order',params);
     },
     async getOrder(context,user_id){
       return await axios.get('get_order',{params: user_id});

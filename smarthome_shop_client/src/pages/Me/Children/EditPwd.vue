@@ -96,24 +96,21 @@
 
 <style scoped>
   #edit-pwd{
-    padding-top: 10%;
     width: 100%;
     height: 100%;
   }
   .el-input{
     display: block;
-    margin: 0 auto 20px;
+    margin: 0 0 20px;
     width: 30%;
   }
   p{
     margin-top: 40px;
     width: 100%;
-    text-align: center;
     font-size: 12px;
     color: #999;
   }
   .btn-section{
-    margin: 50px auto;
     width: 25%;
 
     display: flex;
@@ -122,5 +119,8 @@
   .btn-section .el-button{
     width: 100px;
     outline: none;
+  }
+  .el-tab-pane{
+    padding:20px;
   }
 </style>

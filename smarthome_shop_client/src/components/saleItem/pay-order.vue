@@ -11,16 +11,38 @@
       <div v-if="goodsInfo">
         <div class="order_goods" v-for="(goodsItem,index) in goodsInfo" :key="index">
           <div class="goods">
-            <img :src="goodsItem.pic_path" @click="goDetail(goodsItem.item_id)" alt />
+            <img v-lazy="goodsItem.pic_path" @click="goDetail(goodsItem.item_id)" alt />
             <div>{{goodsItem.title}}</div>
           </div>
           <div class="goods_price">¥{{goodsItem.price}}</div>
           <div class="buy_count">x{{goodsItem.num}}</div>
           <div class="payment">¥{{goodsItem.total_fee}}</div>
-          <div class="order_operation">
-            <el-button type="text">提醒发货</el-button>
-            <el-button type="text" class="outpay">退款</el-button>
+          <!-- 待付款 -->
+          <div class="order_operation" v-if="status===0">
+            <el-button type="text" @click="$emit('orderChangeLeft',orderId)">去付款</el-button>
+            <el-button type="text" class="outpay" @click="$emit('cancelOrder',orderId)">取消订单</el-button>
           </div>
+          <!-- 待发货 -->
+          <div class="order_operation" v-else-if="status===1">
+            <el-button type="text" @click="$emit('orderChangeLeft',orderId)">提醒发货</el-button>
+          </div>
+          <!-- 已发货 -->
+          <div class="order_operation" v-else-if="status===2">
+            <el-button type="text" @click="$emit('orderChangeLeft',orderId)">确认收货</el-button>
+          </div>
+          <!-- 去评价 -->
+          <div class="order_operation" v-else-if="status===3">
+            <el-button type="text" @click="$emit('orderChangeLeft',orderId)">去评价</el-button>
+          </div>
+          <!--全部订单 -->
+          <div class="order_operation" v-else-if="status===4">
+            <el-button type="text" @click="$emit('orderChangeLeft',orderId)">查看详情</el-button>
+          </div>
+          <!--已取消订单 -->
+          <div class="order_operation" v-else-if="status===5">
+            <div class="cancelOrder">已取消订单</div>
+          </div>
+          
         </div>
         <div class="order_address_total">
           <div v-if="addressInfo">
@@ -62,7 +84,8 @@ export default {
     addressInfo: Object,
     orderId: String,
     payment: Number,
-    ctime: String
+    ctime: String,
+    status:Number
   },
   methods: {
     goDetail(id) {
@@ -167,5 +190,11 @@ export default {
 .total {
   font: 14px/150% tahoma, arial, Microsoft YaHei, Hiragino Sans GB,
     "\u5b8b\u4f53", sans-serif;
+}
+.cancelOrder{
+  font: 14px/150% tahoma, arial, Microsoft YaHei, Hiragino Sans GB,
+    "\u5b8b\u4f53", sans-serif;
+    
+  color:#b8b8b8;
 }
 </style>

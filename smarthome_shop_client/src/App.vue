@@ -1,39 +1,55 @@
 <template>
   <div id="app">
-    <HeaderTop class="headertop" v-show="$route.meta.showHeaderTop"/>
-    <HeaderSearch v-show="$route.meta.showHeaderSearch"/>
-    	<keep-alive>
-      <router-view></router-view>
-    </keep-alive>
+    <HeaderTop class="headertop" v-show="$route.meta.showHeaderTop" />
+    <HeaderSearch v-show="$route.meta.showHeaderSearch" />
+    <!-- <keep-alive> -->
+    <router-view v-if="isRouterAlive"></router-view>
+    <!-- </keep-alive> -->
   </div>
 </template>
 
 <script>
-import HeaderTop from './components/HeaderTop/HeaderTop'
-  import HeaderSearch from './components/HeaderSearch/HeaderSearch'
+import HeaderTop from "./components/HeaderTop/HeaderTop";
+import HeaderSearch from "./components/HeaderSearch/HeaderSearch";
 export default {
-  name: 'app',
-
-    mounted(){
-      let userInfo = JSON.parse(window.localStorage.getItem("userInfo"));
-      if(userInfo){
-        this.$store.state.userInfo=userInfo;
-
-      }
-    },
-    components:{
-      HeaderTop,
-      HeaderSearch
-    },
-}
+  name: "app",
+  provide() {
+    return {
+      reload: this.reload
+    };
+  },
+  data() {
+    return {
+      isRouterAlive: true
+    };
+  },
+  mounted() {
+    let userInfo = JSON.parse(window.localStorage.getItem("userInfo"));
+    if (userInfo) {
+      this.$store.state.userInfo = userInfo;
+    }
+  },
+  methods: {
+    reload() {
+      this.isRouterAlive = false;
+      this.$nextTick(function() {
+        this.isRouterAlive = true;
+      });
+    }
+  },
+  components: {
+    HeaderTop,
+    HeaderSearch
+  }
+};
 </script>
 
 <style>
 #app {
-    height: 100%;
-    /* position: relative; */
-	list-style: none;
-  background-color: #fcfcfc; 
+  height: 100%;
+  /* position: relative; */
+  list-style: none;
+  background-color: #fcfcfc;
 }
 /* .headertop{
   position: absolute;

@@ -1212,7 +1212,7 @@ router.post('/create_order', (req, res) => {
         // 获取参数
         let order_id = req.query.order_id;
 
-        console.log('userId: ', order_id);
+        console.log('sssuserId: ', order_id);
         let sqlStr = "SELECT payment FROM tb_order WHERE order_id = " + order_id;
         conn.query(sqlStr, (error, results, fields) => {
             if (error) {
@@ -1259,8 +1259,8 @@ router.post('/pay_pwd', (req, res) => {
         }
     });
 });
-
-router.post('/has_pay', (req, res) => {
+// 支付
+router.post('/update_order', (req, res) => {
     const status = req.body.status;
     console.log('status: ', status);
     const order_id = req.body.order_id;
@@ -1273,7 +1273,7 @@ router.post('/has_pay', (req, res) => {
         } else {
             res.json({
                 success_code: 200,
-                message: "支付成功"
+                message: "修改订单状态成功"
             });
         }
     });

@@ -11,6 +11,9 @@
           :ctime="item.ctime"
           :goodsInfo="item.goodsInfo"
           :addressInfo="item.addressInfo"
+          :status="item.status"
+          @orderChangeLeft="goPay($event)"
+          @cancelOrder="cancelOrder($event)"
         ></payOrder>
       </el-tab-pane>
       <el-tab-pane name="2" :label="payToReceive">
@@ -23,6 +26,8 @@
           :ctime="item.ctime"
           :goodsInfo="item.goodsInfo"
           :addressInfo="item.addressInfo"
+          :status="item.status"
+          @orderChangeLeft="remindPush($event)"
         ></payOrder>
       </el-tab-pane>
       <el-tab-pane name="3" :label="received">
@@ -35,6 +40,8 @@
           :ctime="item.ctime"
           :goodsInfo="item.goodsInfo"
           :addressInfo="item.addressInfo"
+          :status="item.status"
+          @orderChangeLeft="confirmReceive($event)"
         ></payOrder>
       </el-tab-pane>
       <el-tab-pane name="4" :label="comment">
@@ -47,6 +54,8 @@
           :ctime="item.ctime"
           :goodsInfo="item.goodsInfo"
           :addressInfo="item.addressInfo"
+          :status="item.status"
+          @orderChangeLeft="goToComment($event)"
         ></payOrder>
       </el-tab-pane>
       <el-tab-pane name="5" :label="finishedOrder">
@@ -59,6 +68,8 @@
           :ctime="item.ctime"
           :goodsInfo="item.goodsInfo"
           :addressInfo="item.addressInfo"
+          :status="item.status"
+          @orderChangeLeft="viewDetails($event)"
         ></payOrder>
       </el-tab-pane>
     </el-tabs>
@@ -72,6 +83,7 @@ import orderTitle from "../../../components/saleTitle/saleTitle.vue";
 import payOrder from "../../../components/saleItem/pay-order.vue";
 
 export default {
+  inject:['reload'],
   created() {
     this.getOrder();
   },
@@ -119,9 +131,9 @@ export default {
               order_id: this.order[i].order_id
             };
             this.$store.dispatch("getAddressOrder", order_id).then(res => {
-                console.log(res.data.message);
-                this.order[i].addressInfo = res.data.message[0];
-              });
+              console.log(res.data.message);
+              this.order[i].addressInfo = res.data.message[0];
+            });
             this.$store.dispatch("getItemOrder", order_id).then(res => {
               console.log("res.data.message: ", res.data.message);
               year = this.order[i].create_time.split("T")[0];
@@ -130,7 +142,6 @@ export default {
               this.order[i].ctime = ctime;
               this.order[i].goodsInfo = res.data.message;
 
-              
               console.log("this.order[i]: ", this.order[i]);
               // 分类
               if (this.order[i].status === 0) {
@@ -164,6 +175,33 @@ export default {
     },
     selTab(tab, event) {
       // this.$router.push("/me/sales/" + tab.name);
+    },
+    goPay(orderId) {
+      this.$router.push("/pay/" + orderId);
+    },
+    cancelOrder(orderId) {
+      this.$confirm("是否取消订单?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      }).then(() => {
+        let status = `status=5&order_id=${orderId}`;
+        this.$store.dispatch("updateOrder", status).then(res => {
+          if (res.data.success_code === 200) {
+            this.$message({
+              type: "success",
+              message: "取消订单成功!"
+            });
+            this.getOrder();
+            this.reload();
+          }else{
+            this.$message({
+              type: "success",
+              message: "取消订单失败!"
+            });
+          }
+        });
+      });
     }
   }
 };

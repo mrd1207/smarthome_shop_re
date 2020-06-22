@@ -48,24 +48,39 @@ export default {
 
     this.$store.dispatch("getTotal", order_id).then(res => {
       this.total = res.data.message.payment;
+      console.log('sddwres.data.message: ', res.data.message);
     });
   },
-  mounted() {
+  mounted() {    
     this.time();
+    
   },
   data() {
     return {
       payType: 1,
       currentOrderId: "",
       CountDown: "",
-      total: 0
+      total: 0,
+      timeFlag:true
     };
   },
   methods: {
     time() {
       let time = 1800;
+      console.log(`xxsxssxaa:`,window.sessionStorage.getItem('time'));
+      if(window.sessionStorage.getItem('time')){
+        time=window.sessionStorage.getItem('time');
+      }
       let count = setInterval(() => {
+
+        if(!this.timeFlag){
+          clearInterval(count);
+          console.log("出去了吗");
+        }else{
+          window.sessionStorage.setItem('time',time);
+        }
         time--;
+
         let minute = parseInt(time / 60);
         let second = parseInt(time % 60);
         let mt = "";
@@ -75,11 +90,13 @@ export default {
         }
         if (second < 10) {
           st = "0";
-        }
+        } 
         this.CountDown = mt + minute + "分" + st + second + "秒";
         if (time === 0) {
+
+          window.sessionStorage.removeItem('time');
           clearInterval(count);
-          this.$alert("订单已过期", "提示", {
+            this.$alert("订单已过期", "提示", {
             confirmButtonText: "返回首页"
           })
             .then(() => {
@@ -88,11 +105,13 @@ export default {
             .catch(() => {
               this.$router.replace("/home");
             });
+          
         }
       }, 1000);
     },
     confirmPay() {
       let userId = JSON.parse(window.localStorage.getItem("userInfo")).id;
+      console.log('userId: ', userId);
       console.log("userId: ", userId);
       this.$prompt("请输入密码", "提示", {
         confirmButtonText: "确定",
@@ -105,12 +124,16 @@ export default {
         };
         this.$store.dispatch("confirmPayPwd", confirmPwdParams).then(res => {
           if (res.data.success_code === 200) {
+            if(window.sessionStorage.getItem('time')){
+              window.sessionStorage.removeItem("time");
+              this.timeFlag=false;
+            }
             this.$message({
               type: "success",
               message: "成功"
             });
             let status = `status=1&order_id=${this.currentOrderId}`;
-            this.$store.dispatch("hasPay", status).then(res => {
+            this.$store.dispatch("updateOrder", status).then(res => {
               if (res.data.success_code === 200) {
                 this.$router.replace("/finish_pay");
               }
