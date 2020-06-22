@@ -15,14 +15,14 @@
             <dt>促销价</dt>
             <dd>
               <div class="promo_price">
-                <span class="tm-price">{{goodsDetail[0].price / 100 | moneyFormat}}</span>
+                <span class="tm-price">{{goodsDetail[0].price | moneyFormat}}</span>
                 <b>优惠促销</b>
               </div>
             </dd>
           </dl>
           <dl>
             <dt>市场价</dt>
-            <dd class="nor_price">{{goodsDetail[0].normal_price /100 | moneyFormat }}</dd>
+            <dd class="nor_price">{{goodsDetail[0].normal_price | moneyFormat }}</dd>
           </dl>
           <dl>
             <dt>本店优惠</dt>
@@ -59,6 +59,18 @@
           </dl>
           <div class="shopping_car">
             <el-button type="danger" @click.prevent="dealWithCellBtnClick(goodsDetail[0])">加入购物车</el-button>
+            <el-button
+              v-if="isColl"
+              type="warning"
+              icon="el-icon-star-off"
+              @click="collect"
+            >收藏</el-button>
+            <el-button
+              v-else
+              type="warning"
+              icon="el-icon-star-off"
+              @click="cancelCollect"
+            >已收藏</el-button>
           </div>
         </div>
       </div>
@@ -102,7 +114,7 @@
 
 <script>
 import { mapState } from "vuex";
-import qs from 'qs'
+import qs from "qs";
 export default {
   data() {
     return {
@@ -110,7 +122,8 @@ export default {
       rating: 0,
       colors: ["#99A9BF", "#F7BA2A", "#FF9900"],
       currentGoodsId: 0,
-      shopNum: 1
+      shopNum: 1,
+      isColl: true
     };
   },
   computed: {
@@ -124,6 +137,22 @@ export default {
     this.$store.dispatch("getGoodsComment", {
       goodsId: this.currentGoodsId
     });
+    console.log(this.currentGoodsId);
+    this.$store
+      .dispatch("getCollState", {
+        goods_id: this.currentGoodsId,
+        user_id: this.userInfo.id
+      })
+      .then(res => {
+        console.log(res.data);
+        if (res.data.success_code == 200) {
+          this.isColl=false;
+          console.log("收藏了，显示已收藏");
+        } else {
+          this.isColl=true;
+          console.log("没有收藏，显示收藏");
+        }
+      });
   },
   watch: {
     $route() {
@@ -139,72 +168,105 @@ export default {
     }
   },
   methods: {
-     post() {
+    collect() {
+        this.$store
+          .dispatch("addCollection", {
+            goods_id: this.currentGoodsId,
+            user_id: this.userInfo.id,
+            goods_name: this.goodsDetail[0].short_name,
+            goods_pic: this.goodsDetail[0].thumb_url,
+            goods_price: this.goodsDetail[0].price
+          })
+          .then(res => {
+            console.log('es.data: ', res.data);
+            if(res.data.err_code===0){
+              
+              alert("请先登录");
+            }
+            if (res.data.success_code === 200) {
+              this.isColl=false;
+            } else {
+              this.$message({
+                message: "收藏失败",
+                type: "warning"
+              });
+            }
+          });
+    },
+    cancelCollect(){
+        this.$store.dispatch("delCollection", {
+          goods_id: this.currentGoodsId,
+          user_id: this.userInfo.id
+        }).then(res=>{
+          if (res.data.success_code === 200) {
+              this.isColl=true;
+            } else {
+              this.$message({
+                message: "取消收藏失败",
+                type: "warning"
+              });
+            }
+        });
+    },
+    post() {
       if (!this.textarea) {
         this.$message({
-          message: '评论内容不能为空',
-          type: 'warning'
+          message: "评论内容不能为空",
+          type: "warning"
         });
         return;
       }
-      // let commentObj = {
-      //   goods_id: this.goodsDetail[0].goods_id,
-      //   comment_detail: this.textarea,
-      //   comment_rating: this.rating,
-      //   user_id: this.userInfo.id,
-      // };
       let commentObj = {
         goods_id: this.goodsDetail[0].goods_id,
         comment_detail: this.textarea,
         comment_rating: this.rating,
         user_id: this.userInfo.id
       };
-      console.log('commentObj: ', commentObj);
+      console.log("commentObj: ", commentObj);
       this.$store.dispatch("postComment", commentObj).then(res => {
         if (res.success_code === 200) {
           this.textarea = "";
-          this.rating=0;
+          this.rating = 0;
           this.$store.dispatch("getGoodsComment", {
             goodsId: this.currentGoodsId
           });
           this.$message({
-          message: '评论成功',
-          type: 'success'
-        });
-        }else {
-        this.$message.error('评论失败');
-      }
+            message: "评论成功",
+            type: "success"
+          });
+        } else {
+          this.$message.error("评论失败");
+        }
       });
     },
     // 监听商品点击
     async dealWithCellBtnClick(goods) {
       // 1. 发送请求
       if (this.userInfo.user_name) {
-        let goodsObj={
-          user_id:this.userInfo.id,
-          goods_id:goods.goods_id,
-          goods_name:goods.short_name,
-          thumb_url:goods.thumb_url,
-          price:goods.price,
-          buy_count:this.shopNum,
-          counts:goods.counts
-        }
-        this.$store.dispatch("addGoodsToCart",goodsObj).then(res=>{
+        let goodsObj = {
+          user_id: this.userInfo.id,
+          goods_id: goods.goods_id,
+          goods_name: goods.short_name,
+          thumb_url: goods.thumb_url,
+          price: goods.price,
+          buy_count: this.shopNum,
+          counts: goods.counts
+        };
+        this.$store.dispatch("addGoodsToCart", goodsObj).then(res => {
           if (res.success_code === 200) {
-          this.$message({
-          message: '添加购物车成功',
-          type: 'success'
-          });
-          //mark
-          // let user_id = this.userInfo.id;
-          // // 请求商品数据
-          // this.$store.dispatch("getCartsGoods", { user_id });
-          this.shopNum = 1;
-        }else{
-          this.$message.error('添加购物车失败');
-        }
-        })
-        
+            this.$message({
+              message: "添加购物车成功",
+              type: "success"
+            });
+            //mark
+            // let user_id = this.userInfo.id;
+            // // 请求商品数据
+            // this.$store.dispatch("getCartsGoods", { user_id });
+            this.shopNum = 1;
+          } else {
+            this.$message.error("添加购物车失败");
+          }
+        });
       }
     }
   }

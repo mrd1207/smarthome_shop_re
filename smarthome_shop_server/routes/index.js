@@ -181,6 +181,105 @@ router.get('/goodsdetail', (req, res) => {
         }
     });
 });
+//收藏状态
+router.get('/get_collection_state', (req, res) => {
+    // 获取参数
+    let goods_id = req.query.goods_id;
+    console.log('goods_id: ', goods_id);
+    let user_id = req.query.user_id;
+    let sqlStr = 'SELECT * FROM goods_collection WHERE goods_id = ' + goods_id + ' AND user_id = ' + user_id;
+    conn.query(sqlStr, (error, results, fields) => {
+        results = JSON.parse(JSON.stringify(results));
+        if (error) {
+            console.log(error);
+        }
+        if (results) {
+            res.json({
+
+                err_code: 0,
+                message: '未收藏状态!'
+            });
+        } else {
+            res.json({
+                success_code: 200,
+                message: '已收藏状态!'
+            });
+        }
+
+    });
+});
+router.get('/get_collection', (req, res) => {
+    // 获取参数
+    let user_id = req.query.user_id;
+    let sqlStr = 'SELECT * FROM goods_collection WHERE user_id = ' + user_id;
+    conn.query(sqlStr, (error, results, fields) => {
+        if (!error) {
+            results = JSON.parse(JSON.stringify(results));
+            res.json({
+                success_code: 200,
+                message: results
+            });
+        }
+    });
+});
+/// 添加收藏
+router.post('/add_collection', (req, res) => {
+    // 验证用户
+    let user_id = req.body.user_id;
+    console.log('collect_user_id: ', user_id);
+    if (!user_id) {
+        res.json({
+            err_code: 0,
+            message: '非法用户'
+        });
+        return;
+    }
+    // 获取客户端传过来的商品信息
+    let goods_id = req.body.goods_id;
+    let goods_name = req.body.goods_name;
+    let goods_pic = req.body.goods_pic;
+    let goods_price = req.body.goods_price;
+    let add_sql = "INSERT INTO goods_collection(user_id, goods_id, goods_name, goods_pic, goods_price) VALUES (?, ?, ?, ?, ?)";
+    let sql_params = [user_id, goods_id, goods_name, goods_pic, goods_price];
+    console.log('sql_params: ', sql_params);
+    conn.query(add_sql, sql_params, (error, results, fields) => {
+        if (error) {
+            res.json({
+                err_code: 0,
+                message: '添加失败!'
+            });
+            console.log(error);
+        } else {
+            res.json({
+                success_code: 200,
+                message: '添加成功!'
+            });
+        }
+    });
+});
+// 删除收藏
+router.post('/del_collection', (req, res) => {
+    // 获取数据
+    const user_id = req.body.user_id;
+    const goods_id = req.body.goods_id;
+    let sqlStr = "DELETE FROM goods_collection WHERE user_id =" + user_id + " AND goods_id = " + goods_id;
+    conn.query(sqlStr, (error, results, fields) => {
+        console.log('sqlStr: ', sqlStr);
+        if (error) {
+            console.log(error);
+            res.json({
+                err_code: 0,
+                message: '删除失败!'
+            });
+        } else {
+            res.json({
+                success_code: 200,
+                message: '删除成功!'
+            });
+        }
+    });
+});
+
 /**
  * 获取商品评价
  */
@@ -198,12 +297,11 @@ router.get('/goodscomment', (req, res) => {
         }
     });
 });
+
 /**
  * 评论商品
  */
 router.post('/postcomment', (req, res) => {
-    let address = req.body.cartToOrder;
-    console.log('address1: ', address[0].a);
     // 获取参数
     let goods_id = req.body.goods_id;
     console.log('goods_id: ', goods_id);
@@ -610,26 +708,33 @@ router.post('/change_user_msg', (req, res) => {
         }
         let id = fields.id;
         let user_nickname = fields.user_nickname || '';
-        console.log('user_nickname: ', user_nickname);
         let user_sex = fields.user_sex || '';
         let user_address = fields.user_address || '';
         let user_birthday = fields.user_birthday || '';
+        let user_phone = fields.user_phone || '';
+        console.log('user_birthday: ', user_birthday);
         let user_sign = fields.user_sign || '';
-        let user_avatar = 'http://localhost:' + config.port + '/avatar_uploads/avatar_default.jpg';
-        console.log('files.user_avatar: ', files.user_avatar);
-        if (files.user_avatar) {
-            user_avatar = 'http://localhost:' + config.port + '/avatar_uploads/' + basename(files.user_avatar.path);
-        }
+        // let user_avatar = "default_avatar";
+        let sqlStr="";
+        let strParams=[];
         // 验证
         if (!id) {
             res.json({
                 err_code: 0,
                 message: '修改用户信息失败!'
             });
+        } 
+        if (files.user_avatar) {
+            user_avatar = 'http://localhost:' + config.port + '/avatar_uploads/' + basename(files.user_avatar.path);
+            console.log('12user_avatar: ', user_avatar);
+            sqlStr = "UPDATE user_info SET user_nickname = ? , user_sex = ?, user_address = ?, user_birthday = ?, user_sign = ?, user_avatar = ?,user_phone = ? WHERE id = " + id;
+            strParams = [user_nickname, user_sex, user_address, user_birthday, user_sign, user_avatar,user_phone];
+        }else{
+            sqlStr = "UPDATE user_info SET user_nickname = ? , user_sex = ?, user_address = ?, user_birthday = ?, user_sign = ? , user_phone = ?  WHERE id = " + id;
+            strParams = [user_nickname, user_sex, user_address, user_birthday, user_sign,user_phone];
+            
         }
-        // 更新数据
-        let sqlStr = "UPDATE user_info SET user_nickname = ? , user_sex = ?, user_address = ?, user_birthday = ?, user_sign = ?, user_avatar = ? WHERE id = " + id;
-        let strParams = [user_nickname, user_sex, user_address, user_birthday, user_sign, user_avatar];
+
         conn.query(sqlStr, strParams, (error, results, fields) => {
             if (error) {
                 console.log(error);
@@ -1148,11 +1253,11 @@ router.post('/create_order', (req, res) => {
         let num = cartToOrder[i].buy_count;
         let title = cartToOrder[i].goods_name;
         let price = cartToOrder[i].price;
-        let total_fee = cartToOrder[i].price*cartToOrder[i].buy_count;
+        let total_fee = cartToOrder[i].price * cartToOrder[i].buy_count;
         let pic_path = cartToOrder[i].thumb_url;
         // 插入订单商品表
         const addGoodsSql = "INSERT INTO tb_order_item(item_id, order_id, num, title,price,pic_path,total_fee) VALUES (?, ?, ?, ?, ?, ?, ?)";
-        const addGoodsSqlParams = [item_id, order_id, num, title, price, pic_path,total_fee];
+        const addGoodsSqlParams = [item_id, order_id, num, title, price, pic_path, total_fee];
         console.log('addGoodsSqlParams: ', addGoodsSqlParams);
         conn.query(addGoodsSql, addGoodsSqlParams, (error, results, fields) => {
             console.log(error);
@@ -1181,7 +1286,7 @@ router.post('/create_order', (req, res) => {
         }
     });
     const addOrderSql = "INSERT INTO tb_order(order_id, user_id, buyer_nick, status,payment,create_time,goods_count) VALUES (?, ?, ?, ?, ?, ? , ?)";
-    const aaddOrderSqlParams = [order_id, user_id, buyer_nick, status, payment, create_time,cartToOrder.length];
+    const aaddOrderSqlParams = [order_id, user_id, buyer_nick, status, payment, create_time, cartToOrder.length];
     console.log('aaddOrderSqlParams: ', aaddOrderSqlParams);
     conn.query(addOrderSql, aaddOrderSqlParams, (error, results, fields) => {
         console.log(error);

@@ -159,14 +159,12 @@ export default new Vuex.Store({
         });
         // commit是将data传给mutations
         context.commit('setCartsGoods', res.data.message);
-        console.log('res.data.message: ', res.data.message);
       })
     },
     // 删除单间购物车
     delSingleGoods(context, delSingCartParams) {
       return new Promise(resolve => {
         axios.post('delete_goods', delSingCartParams).then(res => {
-          console.log('res.data_del: ', res.data);
           resolve(res.data);
         })
       })
@@ -175,7 +173,6 @@ export default new Vuex.Store({
     delAllGoods(context, delCartParams) {
       return new Promise(resolve => {
         axios.post('delete_all_goods', delCartParams).then(res => {
-          console.log('ress.datas_del: ', res.data);
           resolve(res.data);
         })
       })
@@ -277,7 +274,22 @@ export default new Vuex.Store({
     },
     async getAddressOrder(context,order_id){
       return await axios.get('get_address_order',{params: order_id});
-    }
+    },
+    // 收藏状态
+    async getCollState(context,colObj){
+      return await axios.get('get_collection_state',{params: colObj});
+    },
+    async addCollection(context,colObj){
+      return await axios.post('add_collection', colObj);
+    },
+    async delCollection(context,colObj){
+      return await axios.post('del_collection', colObj);
+    },
+    // 收藏状态
+    async getCollection(context,colObj){
+      return await axios.get('get_collection',{params: colObj});
+    },
+    
   },
   modules: {
 

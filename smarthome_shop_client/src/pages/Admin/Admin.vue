@@ -11,33 +11,32 @@
       <el-aside :width="isCollapse?'64px':'200px'">
         <div class="toggle-btn" @click="toggleCol">|||</div>
         <el-menu
-          default-active="1"
           class="el-menu-vertical-demo"
-          @open="handleOpen"
-          @close="handleClose"
           background-color="#333744"
           text-color="#fff"
           active-text-color="#409EFF"
           unique-opened
           :collapse="isCollapse"
-          :collapse-transition="false">
-          <el-menu-item index="1" @click="goTo('/admin/admingoods')">
+          :collapse-transition="false"
+          router
+          :default-active="adminActivePath">
+          <el-menu-item index="/admin/admingoods" @click="saveState('/admin/admingoods')">
             <i class="el-icon-menu" ></i>
             <span slot="title">商品管理</span>
           </el-menu-item >
-          <el-menu-item index="3" @click="goTo('/admin/addgoods')">
+          <el-menu-item index="/admin/addgoods" @click="saveState('/admin/addgoods')">
             <i class="el-icon-setting"></i>
             <span slot="title">商品上架</span>
           </el-menu-item>
-          <el-menu-item index="4" @click="goTo('/admin/adminusers')">
+          <el-menu-item index="/admin/adminusers" @click="saveState('/admin/adminusers')">
             <i class="el-icon-setting"></i>
             <span slot="title">用户信息</span>
           </el-menu-item>
-          <el-menu-item index="5" @click="goTo('/admin/adminsales')">
+          <el-menu-item index="/admin/adminsales" @click="saveState('/admin/adminsales')">
             <i class="el-icon-setting"></i>
             <span slot="title">订单管理</span>
           </el-menu-item>
-          <el-menu-item index="6" @click="goTo('/admin/adminstatus')">
+          <el-menu-item index="/admin/adminstatus" @click="saveState('/admin/adminstatus')">
             <i class="el-icon-setting"></i>
             <span slot="title">统计</span>
           </el-menu-item>
@@ -54,8 +53,13 @@
 export default {
   data() {
     return {
-      isCollapse:false
+      isCollapse:false,
+      adminActivePath: ""
     }
+  },
+    created() {
+    this.adminActivePath = window.sessionStorage.getItem("adminActivePath");
+    this.$router.push(this.adminActivePath);
   },
   methods: {
     goBack() {
@@ -78,20 +82,14 @@ export default {
           }
         });
       });
-      
-    },
-    handleOpen(){
-
-    },
-    handleClose(){
-
     },
     toggleCol(){
       this.isCollapse=!this.isCollapse;
     },
-    goTo(path){
-        this.$router.replace(path);
-      },
+    saveState(adminActivePath) {
+      window.sessionStorage.setItem("adminActivePath", adminActivePath);
+      this.adminActivePath = adminActivePath;
+    },
 
   }
 };

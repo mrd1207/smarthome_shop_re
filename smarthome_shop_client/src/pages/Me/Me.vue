@@ -5,39 +5,39 @@
         <!-- <img src="../assets/heima.png" alt=""> -->
         <span>个人中心</span>
       </div>
-      <el-button type="text"  @click="goBack">退出</el-button>
+      <el-button type="text" @click="goBack">退出</el-button>
     </el-header>
     <el-container>
       <el-aside :width="isCollapse?'64px':'200px'">
         <div class="toggle-btn" @click="toggleCol">|||</div>
         <el-menu
-          default-active="1"
           class="el-menu-vertical-demo"
-          @open="handleOpen"
-          @close="handleClose"
           background-color="#333744"
           text-color="#fff"
           active-text-color="#409EFF"
           unique-opened
           :collapse="isCollapse"
-          :collapse-transition="false">
-          <el-menu-item index="1" @click="goTo('/me/profile')">
-            <i class="el-icon-document" ></i>
+          :collapse-transition="false"
+          router
+          :default-active="activePath"
+        >
+          <el-menu-item index="/me/profile" @click="saveState('/me/profile')">
+            <i class="el-icon-document"></i>
             <span slot="title">个人信息</span>
-          </el-menu-item >
-          <el-menu-item index="3" @click="goTo('/me/editpwd')">
+          </el-menu-item>
+          <el-menu-item index="/me/editpwd" @click="saveState('/me/editpwd')">
             <i class="el-icon-setting"></i>
             <span slot="title">安全中心</span>
           </el-menu-item>
-          <el-menu-item index="4" @click="goTo('/me/collection')">
+          <el-menu-item index="/me/collection" @click="saveState('/me/collection')">
             <i class="el-icon-collection-tag"></i>
             <span slot="title">我的收藏</span>
           </el-menu-item>
-          <el-menu-item index="5" @click="goTo('/me/adminaddress')">
+          <el-menu-item index="/me/adminaddress" @click="saveState('/me/adminaddress')">
             <i class="el-icon-location"></i>
             <span slot="title">收货地址</span>
           </el-menu-item>
-          <el-menu-item index="6" @click="goTo('/me/sales')">
+          <el-menu-item index="/me/sales" @click="saveState('/me/sales')">
             <i class="el-icon-menu"></i>
             <span slot="title">我的订单</span>
           </el-menu-item>
@@ -54,26 +54,25 @@
 export default {
   data() {
     return {
-      isCollapse:false
-    }
+      isCollapse: false,
+      activePath: ""
+    };
+  },
+  created() {
+    this.activePath = window.sessionStorage.getItem("activePath");
+    this.$router.push(this.activePath);
   },
   methods: {
     goBack() {
       this.$router.push("/home");
     },
-    handleOpen(){
-
+    saveState(activePath) {
+      window.sessionStorage.setItem("activePath", activePath);
+      this.activePath = activePath;
     },
-    handleClose(){
-
-    },
-    goTo(path){
-        this.$router.replace(path);
-    },
-    toggleCol(){
-      this.isCollapse=!this.isCollapse;
+    toggleCol() {
+      this.isCollapse = !this.isCollapse;
     }
-
   }
 };
 </script>
@@ -86,7 +85,6 @@ export default {
   line-height: 50px;
   display: flex;
   justify-content: space-between;
-  
 }
 .el-header span {
   font-size: 24px;
@@ -96,17 +94,16 @@ export default {
 }
 .el-aside {
   background-color: #333744;
-
 }
 .el-button {
   align-self: center;
   height: 45px;
 }
-.el-menu-vertical-demo{
-  border:0px solid;
+.el-menu-vertical-demo {
+  border: 0px solid;
 }
-.toggle-btn{
-  background-color:#4A5064 ;
+.toggle-btn {
+  background-color: #4a5064;
   font-size: 10px;
   line-height: 24px;
   color: #fff;

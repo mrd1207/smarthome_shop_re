@@ -2,17 +2,18 @@
   <div class="user-detail">
     <el-form ref="form" label-width="80px">
       <el-form-item label="头像">
+
         <el-upload
           v-if="editUserInfo"
           class="avatar-uploader"
-          action=""
+          action
           :show-file-list="false"
           :on-success="handleAvatarSuccess"
           :before-upload="beforeAvatarUpload"
           :on-change="handleAvatarChange"
         >
-        <img v-if="user_avatar" :src="userInfo.user_avatar" class="avatar" />
-        <img v-else src="../images/no_login.jpg" class="avatar" />
+          <img v-if="user_avatar" :src="userInfo.user_avatar" class="avatar" />
+          <img v-else src="../images/no_login.jpg" class="avatar" />
         </el-upload>
         <img v-else-if="userInfo.user_avatar" :src="userInfo.user_avatar" class="avatar" />
         <img v-else src="../images/no_login.jpg" class="avatar" />
@@ -48,7 +49,7 @@
       <el-form-item label="常住地">
         <div v-if="editUserInfo">
           <v-distpicker @selected="onSelected"></v-distpicker>
-        <el-input  v-model="user_address"></el-input>
+          <el-input v-model="user_address"></el-input>
         </div>
         <span v-else>{{userInfo.user_address||"暂无填写"}}</span>
       </el-form-item>
@@ -67,7 +68,7 @@
 <script>
 import { mapState } from "vuex";
 import { mapActions } from "vuex";
-import VDistpicker from 'v-distpicker'
+import VDistpicker from "v-distpicker";
 
 export default {
   data() {
@@ -87,14 +88,12 @@ export default {
   computed: {
     ...mapState(["userInfo"])
   },
-  watch:{
-    
-  },
+  watch: {},
   methods: {
-    onSelected(val){   
-      let area_address=`${val.province.value} ${val.city.value} ${val.area.value} `
+    onSelected(val) {
+      let area_address = `${val.province.value} ${val.city.value} ${val.area.value} `;
       // console.log('address: ', address);
-      this.user_address=area_address;
+      this.user_address = area_address;
     },
     handleAvatarSuccess(res, file) {
       this.imageUrl = URL.createObjectURL(file.raw);
@@ -118,19 +117,18 @@ export default {
     // 点击编辑按钮
     onSubmit() {
       this.editUserInfo = true;
-      this.user_avatar=this.userInfo.user_avatar;
+      this.user_avatar = this.userInfo.user_avatar;
       this.user_nickname = this.userInfo.user_nickname;
-      // this.user_phone = this.userInfo.user_phone;//mark
+      this.user_phone = this.userInfo.user_phone;//mark
       this.user_sex = this.userInfo.user_sex;
       this.user_address = this.userInfo.user_address;
       this.user_sign = this.userInfo.user_sign;
-
+      this.user_birthday=this.userInfo.user_birthday;
+      // 把后端的时间给日期插件
     },
     // 编辑完成
     finished() {
       this.editUserInfo = false;
-      // console.log("area:",this.area);
-      // this.user_address=
       let formData = new FormData();
       formData.append("id", this.userInfo.id);
       formData.append("user_nickname", this.user_nickname);
@@ -138,6 +136,7 @@ export default {
       formData.append("user_address", this.user_address);
       formData.append("user_birthday", this.user_birthday);
       formData.append("user_sign", this.user_sign);
+      formData.append("user_phone", this.user_phone);
       if (this.user_avatar) {
         formData.append("user_avatar", this.user_avatar);
       }
@@ -145,7 +144,9 @@ export default {
         user_id: this.userInfo.id
       };
       this.$store.dispatch("updateUserInfo", formData).then(rescode => {
+        console.log('rescode: ', rescode.data);
         this.$store.dispatch("getUserInfo", userId).then(res => {
+          console.log('res: ', res.data);
           if (rescode.success_code === 200) {
             // 更新vuex中的用户数据
             this.$store.commit("setUserInfo", res.message);
@@ -177,9 +178,9 @@ export default {
   overflow: hidden;
 }
 
-.el-form-item__content img,.avatar{
-
-    width: 60px;
+.el-form-item__content img,
+.avatar {
+  width: 60px;
   height: 60px;
   border-radius: 50%;
 }
