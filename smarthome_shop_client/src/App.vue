@@ -5,12 +5,15 @@
     <!-- <keep-alive> -->
     <router-view v-if="isRouterAlive"></router-view>
     <!-- </keep-alive> -->
+    <footerdetail v-show="$route.meta.showFooterDetail"></footerdetail>
+
   </div>
 </template>
 
 <script>
 import HeaderTop from "./components/HeaderTop/HeaderTop";
 import HeaderSearch from "./components/HeaderSearch/HeaderSearch";
+import footerdetail from "../src/components/Footer/footer"
 export default {
   name: "app",
   provide() {
@@ -39,7 +42,8 @@ export default {
   },
   components: {
     HeaderTop,
-    HeaderSearch
+    HeaderSearch,
+    footerdetail
   }
 };
 </script>

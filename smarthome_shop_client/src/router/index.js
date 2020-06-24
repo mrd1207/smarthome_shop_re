@@ -43,7 +43,7 @@ Vue.use(VueRouter)
    {
 		path: '/home',
 	  component: Home,
-	  meta: {showHeaderTop: true, showHeaderSearch: true}
+	  meta: {showHeaderTop: true, showHeaderSearch: true,showFooterDetail:true}
   },
   {
 	  path: '/',
@@ -56,12 +56,12 @@ Vue.use(VueRouter)
 	{
 	  path: '/category/:id/:pageNo',
 	  component: Category,
-	  meta: {showHeaderTop: true, showHeaderSearch: true}
+	  meta: {showHeaderTop: true, showHeaderSearch: true,showFooterDetail:true}
   },
   {
 	  path: '/goods/:id',
 	  component: Goods,
-	  meta: {showHeaderTop: true}
+	  meta: {showHeaderTop: true,showFooterDetail:true}
   },
   {
 	  path: '/me',
@@ -80,7 +80,7 @@ Vue.use(VueRouter)
   {
 	  path: '/shopcar',
 	  component: ShopCar,
-	  meta: {showHeaderTop: true}
+	  meta: {showHeaderTop: true,showFooterDetail:true}
 	},
 	{
 	  path: '/adminlogin',
@@ -107,17 +107,16 @@ Vue.use(VueRouter)
   {
 	  path: '/confirm_order',
 	  component: ConfirmOrder,
-	  meta: {showHeaderTop: true}
+	  meta: {showHeaderTop: true,showFooterDetail:true}
   },
   {
 	  path: '/pay/:order_id',
 	  component: Pay,
-	  meta: {showHeaderTop: true}
+	  meta: {showHeaderTop: true,showFooterDetail:true}
   },
   {
 	  path: '/finish_pay',
 	  component: finishPay,
-	  meta: {showHeaderTop: false}
 	}
 
   ]

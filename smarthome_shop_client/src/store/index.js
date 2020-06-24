@@ -289,7 +289,10 @@ export default new Vuex.Store({
     async getCollection(context,colObj){
       return await axios.get('get_collection',{params: colObj});
     },
-    
+    // 首页商品
+    async getHomeShopList(context){
+      return await axios.get('homeshoplist');
+    },
   },
   modules: {
 

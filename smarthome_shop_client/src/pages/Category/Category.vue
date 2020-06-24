@@ -1,22 +1,26 @@
 <template>
   <div v-if="category.length">
     <div id="container">
+      <el-breadcrumb separator-class="el-icon-arrow-right">
+        <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
+        <el-breadcrumb-item :to="{ path: '/category/1/1' }">商品分类</el-breadcrumb-item>
+      </el-breadcrumb>
       <!-- 分类选项 -->
       <div class="product">
-          <span v-text="this.category[this.currentCate-1].cate_name"></span>
-          <el-dropdown @command="handleCommand">
-            <span class="el-dropdown-link">
-              更多类别
-              <i class="el-icon-arrow-down el-icon--right"></i>
-            </span>
-            <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item
-                v-for="(cate, index) in newcate"
-                :key="index"
-                :command="index+1"
-              >{{ cate.cate_name }}</el-dropdown-item>
-            </el-dropdown-menu>
-          </el-dropdown>
+        <span v-text="this.category[this.currentCate-1].cate_name"></span>
+        <el-dropdown @command="handleCommand">
+          <span class="el-dropdown-link">
+            更多类别
+            <i class="el-icon-arrow-down el-icon--right"></i>
+          </span>
+          <el-dropdown-menu slot="dropdown">
+            <el-dropdown-item
+              v-for="(cate, index) in newcate"
+              :key="index"
+              :command="index+1"
+            >{{ cate.cate_name }}</el-dropdown-item>
+          </el-dropdown-menu>
+        </el-dropdown>
       </div>
       <!-- 商品列表 -->
       <div class="pro_show">
@@ -120,6 +124,9 @@ export default {
 </script>
 
 <style scoped>
+.el-breadcrumb{
+  margin-left: 50px;
+}
 /* 头部分类 */
 .product {
   margin: 20px auto;
@@ -130,10 +137,10 @@ export default {
   font-family: sans-serif;
 }
 .el-dropdown {
-    display: inline-block;
-    color: #409eff;
-    font-size: 21px;
-    margin-left: 20px;
+  display: inline-block;
+  color: #409eff;
+  font-size: 21px;
+  margin-left: 20px;
 }
 
 .el-icon-arrow-down {
@@ -160,11 +167,4 @@ export default {
   margin-bottom: 30px;
   width: 1000px;
 }
-
-
-
-
-
-
-
 </style>

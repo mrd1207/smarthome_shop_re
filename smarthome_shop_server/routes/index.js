@@ -143,18 +143,19 @@ router.get('/allgoods', (req, res) => {
 /**
  * 获取首页商品列表
  */
-router.get('/api/homeshoplist', (req, res) => {
+router.get('/homeshoplist', (req, res) => {
     // 获取总分类
     let cateSqlStr = 'SELECT COUNT(*) FROM category';
     conn.query(cateSqlStr, (error, results, fields) => {
         if (!error) {
             let sqlStr = '';
             for (let i = 0; i < results[0]['COUNT(*)']; i++) {
-                sqlStr += 'SELECT * FROM recommend WHERE category = ' + (i + 1) + ' LIMIT 3;';
+                sqlStr += 'SELECT * FROM recommend WHERE category = ' + (i + 1) + ' LIMIT 4;';
             }
             conn.query(sqlStr, (error, results, fields) => {
                 if (!error) {
                     results = JSON.parse(JSON.stringify(results));
+                    console.log('results: ', results);
                     res.json({
                         success_code: 200,
                         message: results

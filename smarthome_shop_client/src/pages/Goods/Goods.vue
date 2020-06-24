@@ -1,5 +1,10 @@
 <template>
   <div id="container" v-if="goodsDetail[0]">
+    <el-breadcrumb separator-class="el-icon-arrow-right">
+        <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
+        <el-breadcrumb-item :to="{ path: '/category/1/1' }">商品分类</el-breadcrumb-item>
+        <el-breadcrumb-item>商品详情</el-breadcrumb-item>
+      </el-breadcrumb>
     <div class="pro_detail">
       <div class="pro_img">
         <div class="tb_booth">
@@ -274,6 +279,10 @@ export default {
 </script>
 
 <style scoped>
+.el-breadcrumb{
+  margin-left: 50px;
+  margin-top: 30px;
+}
 #container > .pro_detail {
   width: 990px;
   position: relative;
