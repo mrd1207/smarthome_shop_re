@@ -96,7 +96,7 @@ export default {
       tabName: "1",
       orderToPay: "待付款 (0)",
       payToReceive: "待发货 (0)",
-      received: "已收货 (0)",
+      received: "已发货 (0)",
       comment: "待评价 (0)",
       finishedOrder: "全部订单 (0)",
       order: [],
@@ -165,11 +165,12 @@ export default {
               // 状态数量
               this.orderToPay = `待付款 (${orderToPayCount})`;
               this.payToReceive = `待发货 (${payToReceiveCount})`;
-              this.received = `已收货 (${receivedCount})`;
+              this.received = `已发货 (${receivedCount})`;
               this.comment = `待评价 (${commentCount})`;
               this.finishedOrder = `全部订单 (${this.order.length})`;
             });
           }
+            this.$store.commit("setOrderDetail",this.order);
         }
       });
     },

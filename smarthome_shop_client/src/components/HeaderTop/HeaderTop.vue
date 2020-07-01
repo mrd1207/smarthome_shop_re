@@ -1,31 +1,88 @@
 <template>
   <div class="header_nav">
-      <div class="malltitle">O(∩_∩)O~ 欢迎来到智能家居商城！</div>
+    <div class="malltitle">O(∩_∩)O~ 欢迎来到智能家居商城！</div>
 
     <div class="linkStyle">
-      <div v-if="userInfo.user_name" class="userInfoo">
-        <img class="user_avatar" :src="userInfo.user_avatar" alt />
-        <el-link :underline="false" @click="goTo('/me')"> {{userInfo.user_name}}｜</el-link>
+      <div class="disp">
+        <div v-if="userInfo.user_name" class="userInfoo">
+          <img class="user_avatar" :src="userInfo.user_avatar" alt />
+          <el-link :underline="false" @click="goTo('/me')">{{userInfo.user_name}}</el-link>
+        </div>
+        <el-link v-else :underline="false" @click="goTo('/login')">去登录</el-link>
+
+        <div class="gocate">
+          <el-dropdown :hide-on-click="false">
+            <span class="el-dropdown-link">
+              智能分类
+              <i class="el-icon-arrow-down el-icon--right"></i>
+            </span>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item>
+                <div @click="goTo('/category/1/1')">智能客厅</div>
+              </el-dropdown-item>
+              <el-dropdown-item>
+                <div @click="goTo('/category/2/1')">智能卧室</div>
+              </el-dropdown-item>
+              <el-dropdown-item>
+                <div @click="goTo('/category/3/1')">智能厨房</div>
+              </el-dropdown-item>
+              <el-dropdown-item>
+                <div @click="goTo('/category/4/1')">智能卫浴</div>
+              </el-dropdown-item>
+              <el-dropdown-item>
+                <div @click="goTo('/category/5/1')">智能门厅</div>
+              </el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
+        </div>
+        <div class="gofast">
+          <el-dropdown :hide-on-click="false">
+            <span class="el-dropdown-link">
+              快速通道
+              <i class="el-icon-arrow-down el-icon--right"></i>
+            </span>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item>
+                <div @click="goCart">我的购物车</div>
+              </el-dropdown-item>
+              <el-dropdown-item>
+                <div @click="goTo('/home')">首页</div>
+              </el-dropdown-item>
+              <el-dropdown-item>
+                <div @click="goTo('/adminlogin')">管理员</div>
+              </el-dropdown-item>
+              <el-dropdown-item>
+                <div @click="goTo('/login')">重新登录</div>
+              </el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
+        </div>
+        <div class="myinfo">
+          <el-dropdown :hide-on-click="false">
+            <span class="el-dropdown-link">
+              个人信息
+              <i class="el-icon-arrow-down el-icon--right"></i>
+            </span>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item>
+                <div @click="goTo('/me')">个人资料</div>
+              </el-dropdown-item>
+              <el-dropdown-item>
+                <div @click="goTo('/me/editpwd')">修改密码</div>
+              </el-dropdown-item>
+              <el-dropdown-item>
+                <div @click="goTo('/me/collection')">我的收藏</div>
+              </el-dropdown-item>
+              <el-dropdown-item>
+                <div @click="goTo('/me/sales')">我的订单</div>
+              </el-dropdown-item>
+              <el-dropdown-item>
+                <div @click="logout">退出登录</div>
+              </el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
+        </div>
       </div>
-      <el-link v-else :underline="false" @click="goTo('/login')"> 去登录 | </el-link>
-      <!-- <el-link type="primary" :underline="false" @click="logout"> 退出登录 |</el-link> -->
-      <el-link :underline="false" @click="goCart">我的购物车 |</el-link>
-      <el-link :underline="false" @click="goTo('/adminlogin')"> 管理员通道 | </el-link>
-    </div>
-    <div class="myinfo">
-      <el-dropdown :hide-on-click="false">
-        <span class="el-dropdown-link">
-          个人信息
-          <i class="el-icon-arrow-down el-icon--right"></i>
-        </span>
-        <el-dropdown-menu slot="dropdown"  >
-          <el-dropdown-item><div @click="goTo('/me')">个人资料</div> </el-dropdown-item>
-          <el-dropdown-item><div @click="goTo('/me/editpwd')"> 修改密码</div></el-dropdown-item>
-          <el-dropdown-item><div @click="goTo('/me/collection')">我的收藏</div> </el-dropdown-item>
-          <el-dropdown-item><div @click="goTo('/me/sales')">我的订单</div> </el-dropdown-item>
-          <el-dropdown-item><div @click="logout">退出登录</div></el-dropdown-item>
-        </el-dropdown-menu>
-      </el-dropdown>
     </div>
   </div>
 </template>
@@ -81,26 +138,34 @@ export default {
 
 <style scoped>
 .header_nav {
-  margin-top: 0px;
   width: 100%;
   background-color: #f5f5f5;
   height: 35px;
-  position: relative;
+  position: fixed;
+  top: 0;
+  z-index: 1000;
+}
+.disp {
+  display: flex;
+  justify-content: space-between;
+}
+.disp  *{
+  margin-right: 3px;
 }
 .linkStyle {
-  width: 260px;
+  width: 360px;
   position: absolute;
-  right: 10%;
+  right: 3px;
   bottom: 52%;
   transform: translate(0, 50%);
   display: flex;
   justify-content: space-between;
 }
-.el-link{
+.el-link {
   color: black;
   font-weight: 400;
 }
-.malltitle{
+.malltitle {
   width: 260px;
   position: absolute;
   left: 10px;
@@ -109,28 +174,19 @@ export default {
   font-weight: 300;
   font-size: 15px;
 }
-.userInfoo{
-  width: 96px;
+.userInfoo {
   display: flex;
+  line-height: 3px;
+  margin-right: 10px;
 }
 .user_avatar {
-  margin-right:5px;
-  width: 20px;
-  height: 20px;
+  margin-right: 5px;
+  width: 21px;
+  height: 21px;
   border-radius: 50%;
-  border: solid 1px white;
-  /* left: 10%; */
 }
-.myinfo {
-  position: absolute;
-  right: 1%;
-  /* bottom: 50%; */
-  transform: translate(0, 40%);
-}
-
 .el-dropdown-link {
   cursor: pointer;
-  /* color: #409eff; */
   font-weight: 400;
   font-size: 14px;
 }

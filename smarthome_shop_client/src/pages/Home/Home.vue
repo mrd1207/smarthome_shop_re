@@ -20,7 +20,7 @@
         <el-card :body-style="{ padding: '10px' }" class="cardStyle" shadow="hover">
           <img :src="item.cate_img" class="image" @click="goCate(item.cate_id)" />
           <div class="bottom">
-            <el-button type="text" class="cateBtn" @click="goCate(item.cate_id)"></el-button>
+            <el-button type="text" class="cateBtn" @click="goCate(item.cate_id)">{{item.cate_name}}</el-button>
           </div>
         </el-card>
       </div>

@@ -716,24 +716,24 @@ router.post('/change_user_msg', (req, res) => {
         console.log('user_birthday: ', user_birthday);
         let user_sign = fields.user_sign || '';
         // let user_avatar = "default_avatar";
-        let sqlStr="";
-        let strParams=[];
+        let sqlStr = "";
+        let strParams = [];
         // 验证
         if (!id) {
             res.json({
                 err_code: 0,
                 message: '修改用户信息失败!'
             });
-        } 
+        }
         if (files.user_avatar) {
             user_avatar = 'http://localhost:' + config.port + '/avatar_uploads/' + basename(files.user_avatar.path);
             console.log('12user_avatar: ', user_avatar);
             sqlStr = "UPDATE user_info SET user_nickname = ? , user_sex = ?, user_address = ?, user_birthday = ?, user_sign = ?, user_avatar = ?,user_phone = ? WHERE id = " + id;
-            strParams = [user_nickname, user_sex, user_address, user_birthday, user_sign, user_avatar,user_phone];
-        }else{
+            strParams = [user_nickname, user_sex, user_address, user_birthday, user_sign, user_avatar, user_phone];
+        } else {
             sqlStr = "UPDATE user_info SET user_nickname = ? , user_sex = ?, user_address = ?, user_birthday = ?, user_sign = ? , user_phone = ?  WHERE id = " + id;
-            strParams = [user_nickname, user_sex, user_address, user_birthday, user_sign,user_phone];
-            
+            strParams = [user_nickname, user_sex, user_address, user_birthday, user_sign, user_phone];
+
         }
 
         conn.query(sqlStr, strParams, (error, results, fields) => {
@@ -1371,9 +1371,22 @@ router.post('/update_order', (req, res) => {
     console.log('status: ', status);
     const order_id = req.body.order_id;
     console.log('order_id: ', order_id);
-
-    let sqlStr = "UPDATE tb_order SET status = " + status + " WHERE order_id = " + order_id;
+    let sqlStr = "";
+    let time = new Date().toLocaleString();
+    if (status === 1) {
+        sqlStr = "UPDATE tb_order SET status = " + status + ", payment_time = " + time + " WHERE order_id = " + order_id;
+    } else if (status === "2") {
+        sqlStr = `UPDATE tb_order SET status = ${status}, update_time = "${time}" WHERE order_id = ${order_id}`;
+    } else if (status === 3) {
+        sqlStr = "UPDATE tb_order SET status = " + status + ", consign_time = " + time + " WHERE order_id = " + order_id;
+    } else if (status === 4) {
+        sqlStr = "UPDATE tb_order SET status = " + status + ", end_time = " + time + " WHERE order_id = " + order_id;
+    } else if (status === 5) {
+        sqlStr = "UPDATE tb_order SET status = " + status + ", close_time = " + time + " WHERE order_id = " + order_id;
+    }
+    console.log('sqlStr: ', sqlStr);
     conn.query(sqlStr, (error, results, fields) => {
+        console.log('sqlStr: ', sqlStr);
         if (error) {
             console.log(error);
         } else {
@@ -1411,8 +1424,10 @@ router.get('/get_order', (req, res) => {
 router.get('/get_item_order', (req, res) => {
     // 获取参数
     let order_id = req.query.order_id;
+    console.log('order_id: ', order_id);
 
     let sqlStr = "SELECT * FROM tb_order_item WHERE order_id = " + order_id;
+    console.log('sqlStr: ', sqlStr);
     conn.query(sqlStr, (error, results, fields) => {
         if (error) {
             res.json({
@@ -1447,6 +1462,85 @@ router.get('/get_address_order', (req, res) => {
             res.json({
                 success_code: 200,
                 message: results
+            });
+        }
+    });
+});
+
+// 后台发货
+// 获取地址订单信息
+router.get('/get_address_order', (req, res) => {
+    // 获取参数
+    let order_id = req.query.order_id;
+
+    let sqlStr = "SELECT * FROM tb_order_shipping WHERE order_id = " + order_id;
+    conn.query(sqlStr, (error, results, fields) => {
+        if (error) {
+            res.json({
+                err_code: 0,
+                message: '请求用户数据失败'
+            });
+        } else {
+            results = JSON.parse(JSON.stringify(results));
+            console.log('results: ', results);
+            res.json({
+                success_code: 200,
+                message: results
+            });
+        }
+    });
+});
+// 订单信息
+router.get('/user_order_list', (req, res) => {
+    let pageNo = req.query.pageNo || 1;
+    console.log('pageNo: ', pageNo);
+    let pageSize = req.query.count || 10;
+    let countSqlStr = 'SELECT COUNT(*) FROM tb_order';
+    conn.query(countSqlStr, (error, results, fields) => {
+        let counts = JSON.parse(JSON.stringify(results))[0]['COUNT(*)'];
+
+        let sqlStr = 'SELECT order_id, payment, status, create_time, buyer_nick FROM tb_order  LIMIT ' + (pageNo - 1) * pageSize + ',' + pageSize;
+        conn.query(sqlStr, (error, results, fields) => {
+            if (error) {
+                console.log(error);
+                res.json({
+                    err_code: 0,
+                    message: '请求订单列表数据失败'
+                });
+            } else {
+                results = JSON.parse(JSON.stringify(results));
+                console.log('results: ', results);
+                res.json({
+                    success_code: 200,
+                    counts: counts,
+                    message: results
+                });
+            }
+        });
+    });
+});
+// 修改订单信息update_order_address
+router.post('/update_order_address', (req, res) => {
+    // 获取数据
+    const order_id = req.body.order_id;
+    const receiver_name = req.body.address.receiver_name;
+    const receiver_phone = req.body.address.receiver_phone;
+    const receiver_city = req.body.address.receiver_city;
+    const receiver_district = req.body.address.receiver_district;
+    const receiver_address = req.body.address.receiver_address;
+    let sqlStr = "UPDATE tb_order_shipping SET receiver_name = ?, receiver_phone = ?, receiver_city = ?, receiver_district = ? ,receiver_address = ? WHERE order_id = " + order_id;
+    let strParams = [receiver_name, receiver_phone, receiver_city, receiver_district, receiver_address];
+    conn.query(sqlStr, strParams, (error, results, fields) => {
+        if (error) {
+            console.log(error);
+            res.json({
+                err_code: 0,
+                message: '修改失败!'
+            });
+        } else {
+            res.json({
+                success_code: 200,
+                message: '修改成功!'
             });
         }
     });

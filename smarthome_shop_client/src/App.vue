@@ -56,6 +56,6 @@ export default {
   background-color: #fcfcfc;
 }
 /* .headertop{
-  position: absolute;
+  
 } */
 </style>

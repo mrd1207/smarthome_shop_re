@@ -18,14 +18,15 @@ export default new Vuex.Store({
     searchResults:[],
     userAddress:[],
     cartToOrder:[],
-    orderState:[]
+    orderDetail:[]
+
   },
   mutations: {
-    // 订单状态
-    setOrderState(state,orderState){
-      state.orderState=orderState;
-      console.log('state.orderState: ', state.orderState);
+    setOrderDetail(state,orderDetail){
+      state.orderDetail=orderDetail;
+      console.log('state.orderDetail: ', state.orderDetail);
     },
+    // 订单状态
     setHomecasual(state, homecasual) {
       state.homecasual = homecasual;
     },
@@ -293,6 +294,12 @@ export default new Vuex.Store({
     async getHomeShopList(context){
       return await axios.get('homeshoplist');
     },
+    async getUserOrder(context,obj){
+      return await axios.get('user_order_list',{params: obj});
+    },
+    async updateOrderAddress(context,obj){
+      return await axios.post('update_order_address',obj);
+    }
   },
   modules: {
 

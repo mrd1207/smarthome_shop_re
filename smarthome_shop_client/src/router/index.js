@@ -90,7 +90,7 @@ Vue.use(VueRouter)
 	  path: '/admin',
     component: Admin,
     children: [
-      {path: 'adminsales', component: AdminSales},
+      {path: 'adminsales/:pageNum', component: AdminSales},
       {path: 'adminusers', component: AdminUsers},
       {path: 'addgoods', component: AddGoods},
       {path: 'admingoods', component: AdminGoods},

@@ -32,7 +32,7 @@
             <i class="el-icon-setting"></i>
             <span slot="title">用户信息</span>
           </el-menu-item>
-          <el-menu-item index="/admin/adminsales" @click="saveState('/admin/adminsales')">
+          <el-menu-item index="/admin/adminsales/1" @click="saveState('/admin/adminsales/1')">
             <i class="el-icon-setting"></i>
             <span slot="title">订单管理</span>
           </el-menu-item>
