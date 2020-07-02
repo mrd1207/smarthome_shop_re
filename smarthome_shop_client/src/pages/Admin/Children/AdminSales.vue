@@ -20,7 +20,7 @@
         prop="status"
         label="订单状态"
         width="105"
-        :filters="[{ text: '待付款', value: '待付款' }, { text: '待发货', value: '待发货' }]"
+        :filters="[{ text: '待付款', value: '待付款' }, { text: '待发货', value: '待发货' }, { text: '已发货', value: '已发货' }]"
         :filter-method="filterTag"
         filter-placement="bottom-end"
       >
@@ -31,7 +31,11 @@
             disable-transitions
           >{{scope.row.status}}</el-tag>
           <el-tag v-else-if="scope.row.status === '待发货'" disable-transitions>{{scope.row.status}}</el-tag>
-          <el-tag v-else-if="scope.row.status === '已发货'" type="warning" disable-transitions>{{scope.row.status}}</el-tag>
+          <el-tag
+            v-else-if="scope.row.status === '已发货'"
+            type="warning"
+            disable-transitions
+          >{{scope.row.status}}</el-tag>
           <el-tag
             v-else-if="scope.row.status === '已签收'"
             type="warning"
@@ -49,20 +53,29 @@
           >{{scope.row.status}}</el-tag>
         </template>
       </el-table-column>
+
+      <!-- 订单状态操作 -->
+
       <el-table-column label="操作" min-width="150">
+        <!-- 订单搜索框 -->
         <template slot="header">
           <el-input v-model="searchKey" size="mini" placeholder="输入关键字搜索" />
         </template>
+        <!-- 订单操作按钮 -->
         <template slot-scope="scope">
+          <el-button v-if="scope.row.status === '待发货'" size="small" @click="deliverGoods(scope.row)">发货</el-button>
           <el-button
-            v-if="scope.row.status === '待发货'"
+            v-else-if="scope.row.status === '已发货'"
             size="small"
-            @click="changeStatus(scope.row)"
-          >发货</el-button>
+            @click="getLogistics(scope.row)"
+            type="warning"
+          >物流</el-button>
           <el-button v-else type="primary" size="small" @click="toogleExpandCargo(scope.row)">详情</el-button>
-          <el-button type="primary" size="small" @click="handleClick(scope.row)">修改地址</el-button>
+          <el-button type="danger" size="small" @click="handleClick(scope.row)">修改地址</el-button>
+
+          <!-- 对话框 -->
+          <!-- 修改地址对话框 -->
           <el-dialog :visible.sync="editAddress" title="收货地址">
-            <!-- {{scope.row.addressInfo.receiver_name}} -->
             <el-form>
               <el-form-item label="收件人" :label-width="formLabelWidth">
                 <el-input v-model="dialogInfo.receiver_name" autocomplete="off"></el-input>
@@ -85,6 +98,47 @@
               <el-button type="primary" @click="editAddressInfo()">确 定</el-button>
             </div>
           </el-dialog>
+          <!-- 发货物流对话框 -->
+          <el-dialog title="发货" :visible.sync="shipments" width="40%">
+            <el-form>
+              <el-form-item label="发货类型" :label-width="formLabelWidth">
+                <el-select v-model="shipType" placeholder="请选择发货类型">
+                  <el-option
+                    v-for="item in options"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value"
+                  ></el-option>
+                </el-select>
+              </el-form-item>
+            </el-form>
+            <div slot="footer" class="dialog-footer">
+              <el-button @click="shipments = false">取 消</el-button>
+              <el-button type="primary" @click="changeStatus()">确 定</el-button>
+            </div>
+          </el-dialog>
+          <!-- 查看物流 -->
+          <el-dialog title="物流信息" :visible.sync="deliver">
+            <div>物流类型：{{shipping_name}}</div>
+            <div>物流号：{{shipping_code}}</div>
+            <div class="block">
+              <el-timeline>
+                <el-timeline-item
+                  v-for="(activity, index) in activities"
+                  :key="index"
+                  :icon="activity.icon"
+                  :type="activity.type"
+                  :color="activity.color"
+                  :size="activity.size"
+                  :timestamp="activity.timestamp"
+                >{{activity.content}}</el-timeline-item>
+              </el-timeline>
+            </div>
+            <span slot="footer" class="dialog-footer">
+              <el-button @click="deliver = false">取 消</el-button>
+              <el-button type="primary" @click="deliver = false">确 定</el-button>
+            </span>
+          </el-dialog>
         </template>
       </el-table-column>
     </el-table>
@@ -106,19 +160,65 @@
 <script>
 import VDistpicker from "v-distpicker";
 import orderDetail from "../../../components/orderDetail/orderDetail.vue";
+import fomat from "../../../plugins/date.format.js"
 export default {
   data() {
     return {
+      options: [
+        {
+          value: "顺丰快递",
+          label: "顺丰快递"
+        },
+        {
+          value: "圆通快递",
+          label: "圆通快递"
+        },
+        {
+          value: "申通快递",
+          label: "申通快递"
+        },
+        {
+          value: "中通快递",
+          label: "中通快递"
+        },
+        {
+          value: "韵达快递",
+          label: "韵达快递"
+        }
+      ],
+      shipType: "顺丰快递",
+      shipping_name:"",
+      shipping_code:"",
       orderData: [],
       activeIndex: 1, // 当前页码
       pageSize: 10,
       orderCounts: 0,
       editAddress: false,
-      dialogFormVisible: false,
+      shipments: false,
+      deliver: false,
       select: [],
       dialogInfo: {},
       order_id: "",
-      formLabelWidth: "100px"
+      formLabelWidth: "100px",
+      activities: [{
+          content: '您的包裹已从仓库发出',
+          timestamp: '2020-04-12 20:46',
+          size: 'large',
+          type: 'primary',
+          icon: '#0bbd87'
+        }, {
+          content: '快递已到达',
+          timestamp: '2020-04-03 20:46',
+          color: '#0bbd87'
+        }, {
+          content: '快递已到达',
+          timestamp: '2020-04-03 20:46',
+          color: '#0bbd87'
+        },{
+          content: '已签收',
+          timestamp: '2020-04-03 20:46',
+          size: 'large'
+        }]
     };
   },
 
@@ -146,6 +246,7 @@ export default {
             let order_id = {
               order_id: this.orderData[i].order_id
             };
+            
 
             this.$store.dispatch("getItemOrder", order_id).then(res => {
               console.log("res.data.message: ", res.data.message);
@@ -189,24 +290,28 @@ export default {
       this.dialogInfo = row.addressInfo;
       this.order_id = row.order_id;
     },
-    changeStatus(row) {
-      let status = `status=2&order_id=${row.order_id}`;
-        this.$store.dispatch("updateOrder", status).then(res => {
-          if (res.data.success_code === 200) {
-            this.getOrderData();
-            this.$message({
-              type: "success",
-              message: "发货成功!"
-            });
-            // this.getOrder();
-            // this.reload();
-          }else{
-            this.$message({
-              type: "success",
-              message: "发货失败!"
-            });
-          }
-        });
+    deliverGoods(row) {
+      this.shipments = true;
+      this.order_id = row.order_id;
+    },
+    changeStatus() {
+      this.shipments = false;
+      let status = `status=2&order_id=${this.order_id}&shipping_name=${this.shipType}`;
+      console.log('row.order_id: ', this.order_id);
+      this.$store.dispatch("updateOrder", status).then(res => {
+        if (res.data.success_code === 200) {
+          this.getOrderData();
+          this.$message({
+            type: "success",
+            message: "发货成功!"
+          });
+        } else {
+          this.$message({
+            type: "success",
+            message: "发货失败!"
+          });
+        }
+      });
     },
     handleCurrentChange(index) {
       this.$store.dispatch("getUserOrder", {
@@ -224,8 +329,8 @@ export default {
       return row[property] === value;
     },
     onSelected(val) {
-      this.dialogInfo.receiver_city=val.province.value;
-      this.dialogInfo.receiver_district=val.city.value;
+      this.dialogInfo.receiver_city = val.province.value;
+      this.dialogInfo.receiver_district = val.city.value;
     },
     editAddressInfo() {
       let addressParams = {
@@ -249,6 +354,41 @@ export default {
         }
       });
       $table.toggleRowExpansion(row);
+    },
+    // 物流
+    getLogistics(row) {
+      this.deliver = true;
+      this.shipping_name= row.shipping_name;
+      this.shipping_code=row.shipping_code;
+
+      this.activities[1].content="快递已到达"+row.addressInfo.receiver_city+" "+row.addressInfo.receiver_district + "中转部";
+      this.activities[2].content="快递已到达"+row.addressInfo.receiver_address+",正在派送中";
+      // 发货时间
+      let fir_time = new Date(row.update_time).format("yy-m-d h:i:s");
+      // 途中时间
+      let sec_time = new Date(fir_time);
+      sec_time = sec_time.setDate(sec_time.getDate()+1);
+      sec_time=new Date(sec_time).format("yy-m-d h:i:s");
+      // 派送时间
+      let thr_time = new Date(sec_time);
+      thr_time = thr_time.setHours(thr_time.getHours()+18);
+      thr_time = new Date(thr_time).format("yy-m-d h:i:s");
+      // 签收时间
+      let cosign_time = new Date(thr_time);
+      cosign_time = cosign_time.setHours(cosign_time.getHours()+5);
+      cosign_time = new Date(cosign_time);
+      cosign_time = cosign_time.setMinutes(cosign_time.getMinutes()+21);
+      cosign_time = new Date(cosign_time);
+      cosign_time = cosign_time.setSeconds(cosign_time.getSeconds()+21);
+      cosign_time = new Date(cosign_time).format("yy-m-d h:i:s");
+
+      this.activities[0].timestamp=fir_time;
+      this.activities[1].timestamp=sec_time;
+      this.activities[2].timestamp=thr_time;
+      this.activities[3].timestamp=cosign_time;
+
+      
+
     },
     searchKey() {}
   }
@@ -278,5 +418,8 @@ export default {
   position: absolute;
   right: 1%;
   bottom: 5%;
+}
+.block{
+  margin-top: 20px;
 }
 </style>

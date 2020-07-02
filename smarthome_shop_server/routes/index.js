@@ -1365,18 +1365,47 @@ router.post('/pay_pwd', (req, res) => {
         }
     });
 });
+
+function getShipments(){
+    
+}
 // 支付
 router.post('/update_order', (req, res) => {
     const status = req.body.status;
     console.log('status: ', status);
     const order_id = req.body.order_id;
     console.log('order_id: ', order_id);
+    let shipping_name = "";
+    let shipping_code = "";
+    if (req.body.shipping_name) {
+        shipping_name = req.body.shipping_name;
+        // 生成物流号
+        let vNow = new Date();
+        shipping_code += String(vNow.getFullYear());
+        if(vNow.getMonth()<9){
+            shipping_code += "0" + String(vNow.getMonth() + 1);
+        }else{
+        shipping_code += String(vNow.getMonth() + 1);
+        }
+        if(vNow.getDate()<10){
+            shipping_code += "0" + String(vNow.getDate());
+        }else{
+            shipping_code += String(vNow.getDate());
+        }
+        for (let i = 0; i < 6; i++) {
+            shipping_code += Math.floor(Math.random() * 10);
+        }
+        console.log('shipping_code: ', shipping_code);
+    }
+    console.log('shipping_code?: ', shipping_code);
     let sqlStr = "";
     let time = new Date().toLocaleString();
     if (status === 1) {
         sqlStr = "UPDATE tb_order SET status = " + status + ", payment_time = " + time + " WHERE order_id = " + order_id;
     } else if (status === "2") {
-        sqlStr = `UPDATE tb_order SET status = ${status}, update_time = "${time}" WHERE order_id = ${order_id}`;
+        sqlStr = `UPDATE tb_order SET status = ${status}, update_time = "${time}",shipping_name = "${shipping_name}", shipping_code = "${shipping_code}" WHERE order_id = ${order_id}`;
+        console.log('sqlStr: ', sqlStr);
+
     } else if (status === 3) {
         sqlStr = "UPDATE tb_order SET status = " + status + ", consign_time = " + time + " WHERE order_id = " + order_id;
     } else if (status === 4) {
@@ -1499,7 +1528,7 @@ router.get('/user_order_list', (req, res) => {
     conn.query(countSqlStr, (error, results, fields) => {
         let counts = JSON.parse(JSON.stringify(results))[0]['COUNT(*)'];
 
-        let sqlStr = 'SELECT order_id, payment, status, create_time, buyer_nick FROM tb_order  LIMIT ' + (pageNo - 1) * pageSize + ',' + pageSize;
+        let sqlStr = 'SELECT order_id, payment, status, create_time, buyer_nick, shipping_name, shipping_code,update_time FROM tb_order  LIMIT ' + (pageNo - 1) * pageSize + ',' + pageSize;
         conn.query(sqlStr, (error, results, fields) => {
             if (error) {
                 console.log(error);
