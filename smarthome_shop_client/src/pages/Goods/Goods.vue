@@ -225,7 +225,8 @@ export default {
         goods_id: this.goodsDetail[0].goods_id,
         comment_detail: this.textarea,
         comment_rating: this.rating,
-        user_id: this.userInfo.id
+        user_id: this.userInfo.id,
+        isComment:1
       };
       console.log("commentObj: ", commentObj);
       this.$store.dispatch("postComment", commentObj).then(res => {

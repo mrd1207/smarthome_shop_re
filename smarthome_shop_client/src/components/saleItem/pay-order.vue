@@ -20,29 +20,35 @@
           <!-- 待付款 -->
           <div class="order_operation" v-if="status===0">
             <el-button type="text" @click="$emit('orderChangeLeft',orderId)">去付款</el-button>
-            <el-button type="text" class="outpay" @click="$emit('cancelOrder',orderId)">取消订单</el-button>
+            <el-button type="text" class="outpay" @click="$emit('orderChangeRight',orderId)">取消订单</el-button>
           </div>
           <!-- 待发货 -->
           <div class="order_operation" v-else-if="status===1">
-            <el-button type="text" @click="$emit('orderChangeLeft',orderId)">提醒发货</el-button>
+            <el-button
+              type="text"
+              @click="$emit('orderChangeLeft',orderId)"
+              :disabled="disable"
+              v-on:change="onChange"
+            >{{pushGoods}}</el-button>
           </div>
           <!-- 已发货 -->
           <div class="order_operation" v-else-if="status===2">
+            <el-button type="text" class="outpay" @click="$emit('orderChangeRight',orderId)">查看物流</el-button>
             <el-button type="text" @click="$emit('orderChangeLeft',orderId)">确认收货</el-button>
           </div>
           <!-- 去评价 -->
           <div class="order_operation" v-else-if="status===3">
-            <el-button type="text" @click="$emit('orderChangeLeft',orderId)">去评价</el-button>
+            <el-button v-if="goodsItem.is_comment==1" type="text" @click="$emit('orderChangeLeft',{orderId:orderId,index:index})" disabled>已评价</el-button>
+            <el-button v-else type="text" @click="$emit('orderChangeLeft',{orderId:orderId,index:index})" >去评价</el-button>
           </div>
           <!--全部订单 -->
           <div class="order_operation" v-else-if="status===4">
-            <el-button type="text" @click="$emit('orderChangeLeft',orderId)">查看详情</el-button>
+            <el-button type="text" disabled @click="$emit('orderChangeLeft',orderId)">已评价</el-button>
           </div>
           <!--已取消订单 -->
           <div class="order_operation" v-else-if="status===5">
             <div class="cancelOrder">已取消订单</div>
           </div>
-          
         </div>
         <div class="order_address_total">
           <div v-if="addressInfo">
@@ -63,7 +69,7 @@
               <el-button slot="reference" type="text">收货地址</el-button>
             </el-popover>
           </div>
-          <div v-else >
+          <div v-else>
             <el-button type="text">收货地址</el-button>
           </div>
           <div class="total">
@@ -79,17 +85,28 @@
 
 <script>
 export default {
+  model: {
+    prop: "disable",
+    event: "change" //要触发的事件
+  },
   props: {
     goodsInfo: Array,
     addressInfo: Object,
     orderId: String,
     payment: Number,
     ctime: String,
-    status:Number
+    status: Number,
+    disable: Boolean,
+    pushGoods:String,
+    goComment:String,
+    commentGoodsId:String
   },
   methods: {
     goDetail(id) {
       this.$router.replace("/goods/" + id);
+    },
+    onChange(e) {
+      this.$emit("change", event.target.disable);
     }
   }
 };
@@ -153,7 +170,7 @@ export default {
 }
 .order_operation .el-button {
   padding: 10px;
-  margin-left: 50px;
+  margin-left: 10px;
 }
 .order_operation .outpay {
   margin-left: 10px;
@@ -191,10 +208,10 @@ export default {
   font: 14px/150% tahoma, arial, Microsoft YaHei, Hiragino Sans GB,
     "\u5b8b\u4f53", sans-serif;
 }
-.cancelOrder{
+.cancelOrder {
   font: 14px/150% tahoma, arial, Microsoft YaHei, Hiragino Sans GB,
     "\u5b8b\u4f53", sans-serif;
-    
-  color:#b8b8b8;
+
+  color: #b8b8b8;
 }
 </style>

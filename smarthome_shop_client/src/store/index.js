@@ -299,7 +299,34 @@ export default new Vuex.Store({
     },
     async updateOrderAddress(context,obj){
       return await axios.post('update_order_address',obj);
-    }
+    },
+    async insertShipments(context,obj){
+      console.log('obj: ', obj);
+      return await axios.post('insert_order_shipments',obj);
+    },
+    async getOrderShipments(context,obj){
+      return await axios.get('get_order_shipments',{params: obj});
+    },
+    async getOrderShipmentsNum(context,obj){
+      return await axios.get('get_order_shipments_num',{params: obj});
+    },
+    // 提醒发货
+    async remindToPush(context,obj){
+      return await axios.post('remind_push_goods',obj);
+    },
+    async receive_msg(context,obj){
+      return await axios.get('receive_msg',obj);
+    },
+    async confirmToRemind(context,obj){
+      return await axios.post('confirm_remind',obj);
+    },
+    async hasRemindTime(context,obj){
+      return await axios.post('has_remind_time',obj);
+    },
+    
+    async updateCommentState(context,obj){
+      return await axios.post('update_comment_state',obj);
+    },
   },
   modules: {
 

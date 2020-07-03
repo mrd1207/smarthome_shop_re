@@ -24,6 +24,7 @@ const AdminGoods = ()=> import('./../pages/Admin/Children/AdminGoods');
 const AdminUpdate = ()=> import('./../pages/Admin/Children/AdminUpdate');
 const AdminUsers = ()=> import('./../pages/Admin/Children/AdminUsers');
 const AdminStatus=()=>import('./../pages/Admin/Children/AdminStatus');
+const AdminMsg=()=>import('./../pages/Admin/Children/AdminMsg');
 
 const ConfirmOrder=()=>import('./../pages/order/ConfirmOrder');
 const Pay=()=>import('./../pages/order/Pay');
@@ -96,6 +97,7 @@ Vue.use(VueRouter)
       {path: 'admingoods', component: AdminGoods},
       {path: 'adminupdate', component: AdminUpdate},
       {path: 'adminstatus', component: AdminStatus},
+      {path: 'adminmsg', component: AdminMsg},
       {path: '/admin',redirect: '/admin/admingoods'}
     ],
   },

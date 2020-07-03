@@ -56,14 +56,18 @@
 
       <!-- 订单状态操作 -->
 
-      <el-table-column label="操作" min-width="150">
+      <el-table-column label="操作" min-width="210">
         <!-- 订单搜索框 -->
         <template slot="header">
           <el-input v-model="searchKey" size="mini" placeholder="输入关键字搜索" />
         </template>
         <!-- 订单操作按钮 -->
         <template slot-scope="scope">
-          <el-button v-if="scope.row.status === '待发货'" size="small" @click="deliverGoods(scope.row)">发货</el-button>
+          <el-button
+            v-if="scope.row.status === '待发货'"
+            size="small"
+            @click="deliverGoods(scope.row)"
+          >发货</el-button>
           <el-button
             v-else-if="scope.row.status === '已发货'"
             size="small"
@@ -118,7 +122,7 @@
             </div>
           </el-dialog>
           <!-- 查看物流 -->
-          <el-dialog title="物流信息" :visible.sync="deliver">
+          <el-dialog title="物流信息" :visible.sync="deliver" class="shipping">
             <div>物流类型：{{shipping_name}}</div>
             <div>物流号：{{shipping_code}}</div>
             <div class="block">
@@ -126,10 +130,7 @@
                 <el-timeline-item
                   v-for="(activity, index) in activities"
                   :key="index"
-                  :icon="activity.icon"
-                  :type="activity.type"
                   :color="activity.color"
-                  :size="activity.size"
                   :timestamp="activity.timestamp"
                 >{{activity.content}}</el-timeline-item>
               </el-timeline>
@@ -160,7 +161,7 @@
 <script>
 import VDistpicker from "v-distpicker";
 import orderDetail from "../../../components/orderDetail/orderDetail.vue";
-import fomat from "../../../plugins/date.format.js"
+import fomat from "../../../plugins/date.format.js";
 export default {
   data() {
     return {
@@ -187,8 +188,8 @@ export default {
         }
       ],
       shipType: "顺丰快递",
-      shipping_name:"",
-      shipping_code:"",
+      shipping_name: "",
+      shipping_code: "",
       orderData: [],
       activeIndex: 1, // 当前页码
       pageSize: 10,
@@ -200,25 +201,14 @@ export default {
       dialogInfo: {},
       order_id: "",
       formLabelWidth: "100px",
-      activities: [{
-          content: '您的包裹已从仓库发出',
-          timestamp: '2020-04-12 20:46',
-          size: 'large',
-          type: 'primary',
-          icon: '#0bbd87'
-        }, {
-          content: '快递已到达',
-          timestamp: '2020-04-03 20:46',
-          color: '#0bbd87'
-        }, {
-          content: '快递已到达',
-          timestamp: '2020-04-03 20:46',
-          color: '#0bbd87'
-        },{
-          content: '已签收',
-          timestamp: '2020-04-03 20:46',
-          size: 'large'
-        }]
+      activities: [
+        { content: "您的包裹已从仓库发出", timestamp: "", color: "#409eff" },
+        { content: "", timestamp: "", color: "#0bbd87" },
+        { content: "", timestamp: "", color: "#0bbd87" },
+        { content: "已签收", timestamp: "", color: "#dcdfe6" }
+      ],
+      tempShip: {},
+      tempRow: {}
     };
   },
 
@@ -238,7 +228,6 @@ export default {
           count: this.pageSize
         })
         .then(res => {
-          console.log(res.data);
           this.orderData = res.data.message;
 
           this.orderCounts = res.data.counts;
@@ -246,14 +235,11 @@ export default {
             let order_id = {
               order_id: this.orderData[i].order_id
             };
-            
 
             this.$store.dispatch("getItemOrder", order_id).then(res => {
-              console.log("res.data.message: ", res.data.message);
               this.orderData[i].goodsInfo = res.data.message;
             });
             this.$store.dispatch("getAddressOrder", order_id).then(res => {
-              console.log(res.data.message);
               this.orderData[i].addressInfo = res.data.message[0];
             });
             let time = this.orderData[i].create_time.split("T");
@@ -281,23 +267,30 @@ export default {
             }
             this.orderData[i].check = false;
           }
-          console.log("this.orderData: ", this.orderData);
         });
     },
     handleClick(row) {
-      console.log(row);
       this.editAddress = true;
       this.dialogInfo = row.addressInfo;
       this.order_id = row.order_id;
     },
     deliverGoods(row) {
-      this.shipments = true;
       this.order_id = row.order_id;
+      this.tempRow = row;
+      this.shipments = true;
     },
     changeStatus() {
       this.shipments = false;
+      // 点击发货生成物流信息
+      this.shippmentsDemo(this.tempRow);
+
+      this.tempShip = {
+        order_id: this.order_id,
+        shipmentsArr: this.activities
+      };
+      this.$store.dispatch("insertShipments", this.tempShip);
+      // 修改状态为已发货
       let status = `status=2&order_id=${this.order_id}&shipping_name=${this.shipType}`;
-      console.log('row.order_id: ', this.order_id);
       this.$store.dispatch("updateOrder", status).then(res => {
         if (res.data.success_code === 200) {
           this.getOrderData();
@@ -338,7 +331,6 @@ export default {
         order_id: this.order_id
       };
       this.$store.dispatch("updateOrderAddress", addressParams).then(res => {
-        console.log("res.data: ", res.data);
         if (res.data.success_code === 200) {
           this.editAddress = false;
         } else {
@@ -356,39 +348,57 @@ export default {
       $table.toggleRowExpansion(row);
     },
     // 物流
-    getLogistics(row) {
-      this.deliver = true;
-      this.shipping_name= row.shipping_name;
-      this.shipping_code=row.shipping_code;
-
-      this.activities[1].content="快递已到达"+row.addressInfo.receiver_city+" "+row.addressInfo.receiver_district + "中转部";
-      this.activities[2].content="快递已到达"+row.addressInfo.receiver_address+",正在派送中";
+    shippmentsDemo(row) {
+      // 物流详情
+      this.activities[1].content =
+        "快递已到达" +
+        row.addressInfo.receiver_city +
+        " " +
+        row.addressInfo.receiver_district +
+        "中转部";
+      this.activities[2].content =
+        "快递已到达" + row.addressInfo.receiver_address + ",正在派送中";
+      // 物流时间
       // 发货时间
-      let fir_time = new Date(row.update_time).format("yy-m-d h:i:s");
+      let fir_time = new Date(row.update_time).format("yy-m-d H:i:s");
       // 途中时间
       let sec_time = new Date(fir_time);
-      sec_time = sec_time.setDate(sec_time.getDate()+1);
-      sec_time=new Date(sec_time).format("yy-m-d h:i:s");
+      sec_time = sec_time.setDate(sec_time.getDate() + 1);
+      sec_time = new Date(sec_time).format("yy-m-d H:i:s");
       // 派送时间
       let thr_time = new Date(sec_time);
-      thr_time = thr_time.setHours(thr_time.getHours()+18);
-      thr_time = new Date(thr_time).format("yy-m-d h:i:s");
+      thr_time = thr_time.setHours(thr_time.getHours() + 18);
+      thr_time = new Date(thr_time).format("yy-m-d H:i:s");
       // 签收时间
       let cosign_time = new Date(thr_time);
-      cosign_time = cosign_time.setHours(cosign_time.getHours()+5);
+      cosign_time = cosign_time.setHours(cosign_time.getHours() + 5);
       cosign_time = new Date(cosign_time);
-      cosign_time = cosign_time.setMinutes(cosign_time.getMinutes()+21);
+      cosign_time = cosign_time.setMinutes(cosign_time.getMinutes() + 21);
       cosign_time = new Date(cosign_time);
-      cosign_time = cosign_time.setSeconds(cosign_time.getSeconds()+21);
-      cosign_time = new Date(cosign_time).format("yy-m-d h:i:s");
+      cosign_time = cosign_time.setSeconds(cosign_time.getSeconds() + 21);
+      cosign_time = new Date(cosign_time).format("yy-m-d H:i:s");
+      console.log("cosign_time: ", cosign_time);
 
-      this.activities[0].timestamp=fir_time;
-      this.activities[1].timestamp=sec_time;
-      this.activities[2].timestamp=thr_time;
-      this.activities[3].timestamp=cosign_time;
+      this.activities[0].timestamp = fir_time;
+      this.activities[1].timestamp = sec_time;
+      this.activities[2].timestamp = thr_time;
+      this.activities[3].timestamp = cosign_time;
+    },
 
-      
-
+    getLogistics(row) {
+      this.deliver = true;
+      // 物流名称
+      this.shipping_name = row.shipping_name;
+      // 物流号
+      this.shipping_code = row.shipping_code;
+      let order_id={
+        order_id:row.order_id
+      }
+      this.$store.dispatch("getOrderShipments",order_id).then(res=>{
+        console.log("物流");
+        console.log(res.data.message);
+        this.activities=res.data.message;
+      });
     },
     searchKey() {}
   }
@@ -419,7 +429,10 @@ export default {
   right: 1%;
   bottom: 5%;
 }
-.block{
+.shipping div{
+  padding: 10px;
+}
+.block {
   margin-top: 20px;
 }
 </style>

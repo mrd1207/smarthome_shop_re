@@ -186,7 +186,7 @@ router.get('/goodsdetail', (req, res) => {
 router.get('/get_collection_state', (req, res) => {
     // 获取参数
     let goods_id = req.query.goods_id;
-    console.log('goods_id: ', goods_id);
+    // console.log('goods_id: ', goods_id);
     let user_id = req.query.user_id;
     let sqlStr = 'SELECT * FROM goods_collection WHERE goods_id = ' + goods_id + ' AND user_id = ' + user_id;
     conn.query(sqlStr, (error, results, fields) => {
@@ -242,7 +242,7 @@ router.post('/add_collection', (req, res) => {
     let goods_price = req.body.goods_price;
     let add_sql = "INSERT INTO goods_collection(user_id, goods_id, goods_name, goods_pic, goods_price) VALUES (?, ?, ?, ?, ?)";
     let sql_params = [user_id, goods_id, goods_name, goods_pic, goods_price];
-    console.log('sql_params: ', sql_params);
+    // console.log('sql_params: ', sql_params);
     conn.query(add_sql, sql_params, (error, results, fields) => {
         if (error) {
             res.json({
@@ -265,7 +265,7 @@ router.post('/del_collection', (req, res) => {
     const goods_id = req.body.goods_id;
     let sqlStr = "DELETE FROM goods_collection WHERE user_id =" + user_id + " AND goods_id = " + goods_id;
     conn.query(sqlStr, (error, results, fields) => {
-        console.log('sqlStr: ', sqlStr);
+        // console.log('sqlStr: ', sqlStr);
         if (error) {
             console.log(error);
             res.json({
@@ -305,11 +305,11 @@ router.get('/goodscomment', (req, res) => {
 router.post('/postcomment', (req, res) => {
     // 获取参数
     let goods_id = req.body.goods_id;
-    console.log('goods_id: ', goods_id);
     let comment_detail = req.body.comment_detail;
     let comment_rating = req.body.comment_rating;
     let user_id = req.body.user_id;
 
+    // 插入评论表
     const addSql = "INSERT INTO comments(goods_id, comment_detail, comment_rating, user_id) VALUES (?, ?, ?, ?)";
     const addSqlParams = [goods_id, comment_detail, comment_rating, user_id];
     conn.query(addSql, addSqlParams, (error, results, fields) => {
@@ -327,6 +327,29 @@ router.post('/postcomment', (req, res) => {
                         message: "发布成功"
                     });
                 }
+            });
+        }
+    });
+});
+// 更新商品订单的评论状态
+router.post('/update_comment_state', (req, res) => {
+    let order_id = req.body.order_id;
+    let goods_id = req.body.goods_id;
+    let is_comment = req.body.isComment;
+    // 更新商品订单的评论状态
+    let upSqlStr = "UPDATE tb_order_item SET is_comment = ? WHERE item_id = " + goods_id + " AND order_id = " + order_id;
+    let upSqlParams = [is_comment];
+    conn.query(upSqlStr, upSqlParams, (error, results, fields) => {
+        if (error) {
+            console.log(error);
+            res.json({
+                err_code: 0,
+                message: '更新评论状态失败!'
+            });
+        } else {
+            res.json({
+                success_code: 200,
+                message: '更新评论状态成功!'
             });
         }
     });
@@ -713,7 +736,7 @@ router.post('/change_user_msg', (req, res) => {
         let user_address = fields.user_address || '';
         let user_birthday = fields.user_birthday || '';
         let user_phone = fields.user_phone || '';
-        console.log('user_birthday: ', user_birthday);
+        // console.log('user_birthday: ', user_birthday);
         let user_sign = fields.user_sign || '';
         // let user_avatar = "default_avatar";
         let sqlStr = "";
@@ -727,7 +750,7 @@ router.post('/change_user_msg', (req, res) => {
         }
         if (files.user_avatar) {
             user_avatar = 'http://localhost:' + config.port + '/avatar_uploads/' + basename(files.user_avatar.path);
-            console.log('12user_avatar: ', user_avatar);
+            // console.log('12user_avatar: ', user_avatar);
             sqlStr = "UPDATE user_info SET user_nickname = ? , user_sex = ?, user_address = ?, user_birthday = ?, user_sign = ?, user_avatar = ?,user_phone = ? WHERE id = " + id;
             strParams = [user_nickname, user_sex, user_address, user_birthday, user_sign, user_avatar, user_phone];
         } else {
@@ -843,9 +866,9 @@ router.post('/api/change_user_phone', (req, res) => {
  */
 router.post('/admin_login', (req, res) => {
     const account = req.body.account;
-    console.log('account: ', account);
+    // console.log('account: ', account);
     const pwd = req.body.pwd;
-    console.log('pwd: ', pwd);
+    // console.log('pwd: ', pwd);
     const md5Pwd = md5(md5(req.body.pwd) + S_KEY);
 
     if (!account || !pwd) {
@@ -889,7 +912,7 @@ router.post('/admin_login', (req, res) => {
  * 管理员退出登录
  */
 router.get('/admin_logout', (req, res) => {
-    console.log(req.session.adminId)
+    // console.log(req.session.adminId)
     delete req.session.adminId;
 
     res.json({
@@ -1018,7 +1041,7 @@ router.post('/add_shop_recom', (req, res) => {
     form.uploadDir = config.uploadsGoodsPath; // 上传图片放置的文件夹
     form.keepExtensions = true; // 保持文件的原始扩展名
     form.parse(req, (err, fields, files) => {
-        console.log('req: ', req);
+        // console.log('req: ', req);
         if (err) {
             return next(err);
         }
@@ -1120,7 +1143,7 @@ router.get('/user_address', (req, res) => {
             });
         } else {
             results = JSON.parse(JSON.stringify(results));
-            console.log('results: ', results);
+            // console.log('results: ', results);
             if (!results) {
                 delete req.session.userId;
                 res.json({
@@ -1179,7 +1202,7 @@ router.post('/add_address', (req, res) => {
     let is_default = 0; // 默认地址
     let add_sql = "INSERT INTO tb_address(id, real_name, tel, area_name, street_name, is_default) VALUES (?, ?, ?, ?, ?, ?)";
     let sql_params = [user_id, real_name, tel, area_name, street_name, is_default];
-    console.log('sql_params: ', sql_params);
+    // console.log('sql_params: ', sql_params);
     conn.query(add_sql, sql_params, (error, results, fields) => {
         if (error) {
             res.json({
@@ -1242,7 +1265,7 @@ router.post('/create_order', (req, res) => {
             order_id += Math.floor(Math.random() * 10);
         }
         order_id = new Date().getTime() + order_id;
-        console.log("xxx");
+        // console.log("xxx");
 
     }
 
@@ -1259,11 +1282,11 @@ router.post('/create_order', (req, res) => {
         // 插入订单商品表
         const addGoodsSql = "INSERT INTO tb_order_item(item_id, order_id, num, title,price,pic_path,total_fee) VALUES (?, ?, ?, ?, ?, ?, ?)";
         const addGoodsSqlParams = [item_id, order_id, num, title, price, pic_path, total_fee];
-        console.log('addGoodsSqlParams: ', addGoodsSqlParams);
+        // console.log('addGoodsSqlParams: ', addGoodsSqlParams);
         conn.query(addGoodsSql, addGoodsSqlParams, (error, results, fields) => {
             console.log(error);
             results = JSON.parse(JSON.stringify(results));
-            console.log('results: ', results);
+            // console.log('results: ', results);
             if (error) {
                 console.log(error);
             } else {
@@ -1275,11 +1298,11 @@ router.post('/create_order', (req, res) => {
     // 插入订单地址表
     const addReceiverSql = "INSERT INTO tb_order_shipping(order_id, receiver_name, receiver_phone,receiver_city,receiver_district,receiver_address) VALUES (?, ?, ?, ?, ?, ?)";
     const addReceiverSqlParams = [order_id, receiver_name, receiver_phone, receiver_city, receiver_district, receiver_address];
-    console.log('addReceiverSqlParams: ', addReceiverSqlParams);
+    // console.log('addReceiverSqlParams: ', addReceiverSqlParams);
     conn.query(addReceiverSql, addReceiverSqlParams, (error, results, fields) => {
         console.log(error);
         results = JSON.parse(JSON.stringify(results));
-        console.log('results: ', results);
+        // console.log('results: ', results);
         if (error) {
             console.log(error);
         } else {
@@ -1288,16 +1311,16 @@ router.post('/create_order', (req, res) => {
     });
     const addOrderSql = "INSERT INTO tb_order(order_id, user_id, buyer_nick, status,payment,create_time,goods_count) VALUES (?, ?, ?, ?, ?, ? , ?)";
     const aaddOrderSqlParams = [order_id, user_id, buyer_nick, status, payment, create_time, cartToOrder.length];
-    console.log('aaddOrderSqlParams: ', aaddOrderSqlParams);
+    // console.log('aaddOrderSqlParams: ', aaddOrderSqlParams);
     conn.query(addOrderSql, aaddOrderSqlParams, (error, results, fields) => {
         console.log(error);
         results = JSON.parse(JSON.stringify(results));
-        console.log('results: ', results);
+        // console.log('results: ', results);
         if (error) {
             console.log(error);
         } else {
             response++;
-            console.log('response: ', response);
+            // console.log('response: ', response);
 
             if (response >= 3) {
                 res.json({
@@ -1318,7 +1341,7 @@ router.post('/create_order', (req, res) => {
         // 获取参数
         let order_id = req.query.order_id;
 
-        console.log('sssuserId: ', order_id);
+        // console.log('sssuserId: ', order_id);
         let sqlStr = "SELECT payment FROM tb_order WHERE order_id = " + order_id;
         conn.query(sqlStr, (error, results, fields) => {
             if (error) {
@@ -1328,7 +1351,7 @@ router.post('/create_order', (req, res) => {
                 });
             } else {
                 results = JSON.parse(JSON.stringify(results));
-                console.log('results: ', results);
+                // console.log('results: ', results);
                 if (!results) {
                     delete req.session.userId;
                     res.json({
@@ -1351,7 +1374,7 @@ router.post('/pay_pwd', (req, res) => {
     let sqlStr = "SELECT * FROM user_info WHERE id = '" + user_id + "' LIMIT 1";
     conn.query(sqlStr, (error, results, fields) => {
         results = JSON.parse(JSON.stringify(results));
-        console.log('results: ', results);
+        // console.log('results: ', results);
         if (results[0].user_pwd !== input_Pwd) {
             res.json({
                 err_code: 0,
@@ -1366,15 +1389,15 @@ router.post('/pay_pwd', (req, res) => {
     });
 });
 
-function getShipments(){
-    
+function getShipments() {
+
 }
 // 支付
 router.post('/update_order', (req, res) => {
     const status = req.body.status;
-    console.log('status: ', status);
+    // console.log('status: ', status);
     const order_id = req.body.order_id;
-    console.log('order_id: ', order_id);
+    // console.log('order_id: ', order_id);
     let shipping_name = "";
     let shipping_code = "";
     if (req.body.shipping_name) {
@@ -1382,40 +1405,41 @@ router.post('/update_order', (req, res) => {
         // 生成物流号
         let vNow = new Date();
         shipping_code += String(vNow.getFullYear());
-        if(vNow.getMonth()<9){
+        if (vNow.getMonth() < 9) {
             shipping_code += "0" + String(vNow.getMonth() + 1);
-        }else{
-        shipping_code += String(vNow.getMonth() + 1);
+        } else {
+            shipping_code += String(vNow.getMonth() + 1);
         }
-        if(vNow.getDate()<10){
+        if (vNow.getDate() < 10) {
             shipping_code += "0" + String(vNow.getDate());
-        }else{
+        } else {
             shipping_code += String(vNow.getDate());
         }
         for (let i = 0; i < 6; i++) {
             shipping_code += Math.floor(Math.random() * 10);
         }
-        console.log('shipping_code: ', shipping_code);
+        // console.log('shipping_code: ', shipping_code);
     }
-    console.log('shipping_code?: ', shipping_code);
+    // console.log('shipping_code?: ', shipping_code);
     let sqlStr = "";
     let time = new Date().toLocaleString();
     if (status === 1) {
         sqlStr = "UPDATE tb_order SET status = " + status + ", payment_time = " + time + " WHERE order_id = " + order_id;
     } else if (status === "2") {
         sqlStr = `UPDATE tb_order SET status = ${status}, update_time = "${time}",shipping_name = "${shipping_name}", shipping_code = "${shipping_code}" WHERE order_id = ${order_id}`;
-        console.log('sqlStr: ', sqlStr);
+        // console.log('sqlStr: ', sqlStr);
 
-    } else if (status === 3) {
-        sqlStr = "UPDATE tb_order SET status = " + status + ", consign_time = " + time + " WHERE order_id = " + order_id;
-    } else if (status === 4) {
-        sqlStr = "UPDATE tb_order SET status = " + status + ", end_time = " + time + " WHERE order_id = " + order_id;
+    } else if (status === "3") {
+        // sqlStr = "UPDATE tb_order SET status = " + status + ", consign_time = " + time + " WHERE order_id = " + order_id;
+        sqlStr = `UPDATE tb_order SET status = ${status}, consign_time = "${time}" WHERE order_id = ${order_id}`;
+    } else if (status === "4") {
+        sqlStr = `UPDATE tb_order SET status = ${status}, end_time = "${time}" WHERE order_id = ${order_id}`;
     } else if (status === 5) {
         sqlStr = "UPDATE tb_order SET status = " + status + ", close_time = " + time + " WHERE order_id = " + order_id;
     }
-    console.log('sqlStr: ', sqlStr);
+    // console.log('sqlStr: ', sqlStr);
     conn.query(sqlStr, (error, results, fields) => {
-        console.log('sqlStr: ', sqlStr);
+        // console.log('sqlStr: ', sqlStr);
         if (error) {
             console.log(error);
         } else {
@@ -1431,7 +1455,7 @@ router.get('/get_order', (req, res) => {
     // 获取参数
     let user_id = req.query.user_id;
 
-    console.log('userId: ', user_id);
+    // console.log('userId: ', user_id);
     let sqlStr = "SELECT * FROM tb_order WHERE user_id = " + user_id;
     conn.query(sqlStr, (error, results, fields) => {
         if (error) {
@@ -1441,7 +1465,7 @@ router.get('/get_order', (req, res) => {
             });
         } else {
             results = JSON.parse(JSON.stringify(results));
-            console.log('results: ', results);
+            // console.log('results: ', results);
             res.json({
                 success_code: 200,
                 message: results
@@ -1453,10 +1477,10 @@ router.get('/get_order', (req, res) => {
 router.get('/get_item_order', (req, res) => {
     // 获取参数
     let order_id = req.query.order_id;
-    console.log('order_id: ', order_id);
+    // console.log('order_id: ', order_id);
 
     let sqlStr = "SELECT * FROM tb_order_item WHERE order_id = " + order_id;
-    console.log('sqlStr: ', sqlStr);
+    // console.log('sqlStr: ', sqlStr);
     conn.query(sqlStr, (error, results, fields) => {
         if (error) {
             res.json({
@@ -1465,7 +1489,7 @@ router.get('/get_item_order', (req, res) => {
             });
         } else {
             results = JSON.parse(JSON.stringify(results));
-            console.log('results: ', results);
+            // console.log('results: ', results);
             res.json({
                 success_code: 200,
                 message: results
@@ -1487,7 +1511,7 @@ router.get('/get_address_order', (req, res) => {
             });
         } else {
             results = JSON.parse(JSON.stringify(results));
-            console.log('results: ', results);
+            // console.log('results: ', results);
             res.json({
                 success_code: 200,
                 message: results
@@ -1511,7 +1535,7 @@ router.get('/get_address_order', (req, res) => {
             });
         } else {
             results = JSON.parse(JSON.stringify(results));
-            console.log('results: ', results);
+            // console.log('results: ', results);
             res.json({
                 success_code: 200,
                 message: results
@@ -1522,7 +1546,7 @@ router.get('/get_address_order', (req, res) => {
 // 订单信息
 router.get('/user_order_list', (req, res) => {
     let pageNo = req.query.pageNo || 1;
-    console.log('pageNo: ', pageNo);
+    // console.log('pageNo: ', pageNo);
     let pageSize = req.query.count || 10;
     let countSqlStr = 'SELECT COUNT(*) FROM tb_order';
     conn.query(countSqlStr, (error, results, fields) => {
@@ -1538,7 +1562,7 @@ router.get('/user_order_list', (req, res) => {
                 });
             } else {
                 results = JSON.parse(JSON.stringify(results));
-                console.log('results: ', results);
+                // console.log('results: ', results);
                 res.json({
                     success_code: 200,
                     counts: counts,
@@ -1570,6 +1594,176 @@ router.post('/update_order_address', (req, res) => {
             res.json({
                 success_code: 200,
                 message: '修改成功!'
+            });
+        }
+    });
+});
+//
+router.post('/insert_order_shipments', (req, res) => {
+    // 商品参数
+    let shipmentsArr = req.body.shipmentsArr;
+    let order_id = req.body.order_id;
+    let response = 0;
+    for (let i = 0; i < shipmentsArr.length; i++) {
+        let content = shipmentsArr[i].content;
+        let timestamp = shipmentsArr[i].timestamp;
+        let color = shipmentsArr[i].color;
+
+        // 插入订单商品表
+        const addShipmentsSql = "INSERT INTO tb_order_shipments(order_id, content, timestamp, color) VALUES (?, ?, ?, ?)";
+        const addShipmentsSqlParams = [order_id, content, timestamp, color];
+        console.log('addGoodsSqlParams: ', addShipmentsSqlParams);
+        conn.query(addShipmentsSql, addShipmentsSqlParams, (error, results, fields) => {
+            if (error) {
+                console.log(error);
+            } else {
+                response++;
+            }
+        });
+    }
+    if(response===shipmentsArr.length){
+        res.json({
+            success_code: 200,
+            message: '发送成功!'
+        });
+    }
+});
+router.get('/get_order_shipments', (req, res) => {
+    // 获取参数
+    let order_id = req.query.order_id;
+
+    let sqlStr = "SELECT * FROM tb_order_shipments WHERE order_id = " + order_id;
+    conn.query(sqlStr, (error, results, fields) => {
+        if (error) {
+            res.json({
+                err_code: 0,
+                message: '请求数据失败'
+            });
+        } else {
+            results = JSON.parse(JSON.stringify(results));
+            // console.log('results: ', results);
+            res.json({
+                success_code: 200,
+                message: results
+            });
+        }
+    });
+});
+router.get('/get_order_shipments_num', (req, res) => {
+    // 获取参数
+    let order_id = req.query.order_id;
+
+    let sqlStr = "SELECT shipping_name,shipping_code FROM tb_order WHERE order_id = " + order_id;
+    conn.query(sqlStr, (error, results, fields) => {
+        if (error) {
+            res.json({
+                err_code: 0,
+                message: '请求数据失败'
+            });
+        } else {
+            results = JSON.parse(JSON.stringify(results));
+            // console.log('results: ', results);
+            res.json({
+                success_code: 200,
+                message: results
+            });
+        }
+    });
+});
+
+// 提醒发货
+router.post('/remind_push_goods', (req, res) => {
+
+    // 获取客户端传过来的商品信息
+    let order_id = req.body.order_id;
+    let buyer_message = req.body.buyer_message;
+    let remind_time= new Date().toLocaleString();
+    let has_remind_time=new Date(remind_time);
+    has_remind_time = has_remind_time.setSeconds(has_remind_time.getSeconds() + 60);
+    has_remind_time=new Date(has_remind_time).toLocaleString();
+    let update_sql = "UPDATE tb_order SET buyer_message = ?,remind_time = ?,hasremind_time = ? WHERE order_id = " + order_id;
+    let sql_params = [buyer_message,remind_time,has_remind_time];
+    // console.log('sql_params: ', sql_params);
+    conn.query(update_sql, sql_params, (error, results, fields) => {
+        if (error) {
+            res.json({
+                err_code: 0,
+                message: '提醒失败!'
+            });
+            console.log(error);
+        } else {
+            res.json({
+                success_code: 200,
+                message: '提醒成功!'
+            });
+        }
+    });
+});
+// 接受消息提醒
+router.post('/has_remind_time', (req, res) => {
+    // 获取参数
+    let order_id = req.body.order_id;
+
+    let sqlStr = "SELECT hasremind_time FROM tb_order WHERE order_id = " + order_id;
+    console.log('sqlStr: ', sqlStr);
+    conn.query(sqlStr, (error, results, fields) => {
+        if (error) {
+            console.log('error: ', error);
+            res.json({
+                err_code: 0,
+                message: '请求数据失败'
+            });
+        } else {
+            results = JSON.parse(JSON.stringify(results));
+            // console.log('results: ', results);
+            res.json({
+                success_code: 200,
+                message: results
+            });
+        }
+    })
+})
+// 接受消息提醒
+router.get('/receive_msg', (req, res) => {
+    // 获取参数
+    // let order_id = req.query.order_id;
+
+    let sqlStr = "SELECT order_id,buyer_nick,remind_time FROM tb_order WHERE buyer_message = " + 1;
+    conn.query(sqlStr, (error, results, fields) => {
+        if (error) {
+            res.json({
+                err_code: 0,
+                message: '请求数据失败'
+            });
+        } else {
+            results = JSON.parse(JSON.stringify(results));
+            // console.log('results: ', results);
+            res.json({
+                success_code: 200,
+                message: results
+            });
+        }
+    });
+});
+
+// 提醒发货
+router.post('/confirm_remind', (req, res) => {
+
+    // 获取客户端传过来的商品信息
+    let order_id = req.body.order_id;
+    let update_sql = "UPDATE tb_order SET buyer_message = 0 WHERE order_id = " + order_id;
+
+    conn.query(update_sql, (error, results, fields) => {
+        if (error) {
+            res.json({
+                err_code: 0,
+                message: '确认失败!'
+            });
+            console.log(error);
+        } else {
+            res.json({
+                success_code: 200,
+                message: '确认成功!'
             });
         }
     });

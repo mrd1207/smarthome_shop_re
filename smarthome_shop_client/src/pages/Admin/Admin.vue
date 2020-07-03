@@ -36,6 +36,10 @@
             <i class="el-icon-setting"></i>
             <span slot="title">订单管理</span>
           </el-menu-item>
+          <el-menu-item index="/admin/adminmsg" @click="saveState('/admin/adminmsg')">
+            <i class="el-icon-setting"></i>
+            <span slot="title">消息提醒</span>
+          </el-menu-item>
           <el-menu-item index="/admin/adminstatus" @click="saveState('/admin/adminstatus')">
             <i class="el-icon-setting"></i>
             <span slot="title">统计</span>
